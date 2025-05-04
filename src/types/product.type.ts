@@ -43,10 +43,22 @@ interface ProductPhoto {
   id: number;
   product_id: number;
   photo_url: string;
-  position: number;
+  cloudinary_public_id: string;
   created_at: string; // ISO 8601 date string
 }
 
+export interface ProductI {
+  id: number;
+  name: string;
+  description: string;
+  price: string; // String, оскільки має формат "xxx.xx"
+  stock: number;
+  sales_count: number;
+  discounted_price?: string; // String, оскільки має формат "xxx.xx"
+  created_at: string; // ISO 8601 date string
+  updated_at: string; // ISO 8601 date string
+  product_photos: ProductPhoto[];
+}
 export interface Product {
   id: number;
   name: string;
@@ -54,6 +66,7 @@ export interface Product {
   price: string; // String, оскільки має формат "xxx.xx"
   stock: number;
   sales_count: number;
+  discounted_price?: string; // String, оскільки має формат "xxx.xx"
   created_at: string; // ISO 8601 date string
   updated_at: string; // ISO 8601 date string
   product_photos: ProductPhoto[];

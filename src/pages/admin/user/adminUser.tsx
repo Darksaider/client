@@ -7,10 +7,6 @@ import { StatusBadge } from "./StatusBadge";
 import { useExpandableRows } from "./useExpandableRows";
 import axios from "axios";
 
-// --- Початкові значення для форми СТВОРЕННЯ користувача ---
-// Використовуємо тип UpdateUser, але заповнюємо тільки необхідні поля для створення
-// УВАГА: Пароль зазвичай потрібен при створенні, але його немає в формі.
-// Його потрібно буде обробляти окремо або додати в форму (можливо, умовно).
 const initialUserValues: Partial<UpdateUser> = {
   first_name: "",
   last_name: "",
@@ -56,14 +52,8 @@ export const AdminUser: React.FC = () => {
   const handleCreateSubmit = useCallback(
     async (data: UpdateUser) => {
       // Приймає тип даних форми
-
-      console.log(data); // Для налагодження
       console.log("Створення нового користувача:", data);
-      // Тут ваш API виклик для СТВОРЕННЯ
-      // УВАГА: Потрібно додати обробку пароля, якщо він потрібен для API
       try {
-        // const createData = { ...data, password: 'some_generated_or_input_password' };
-        // await api.createUser(createData); // Замініть на реальний виклик
         axios.post("http://localhost:3000/users/", data);
         alert(`Користувача ${data.first_name} успішно створено!`);
         setShowCreateForm(false); // Сховати форму створення
@@ -145,7 +135,6 @@ export const AdminUser: React.FC = () => {
           >
             {expandedRows.includes(user.id) ? "Згорнути" : "Редагувати"}
           </button>
-          {/* УВАГА: Додайте логіку видалення */}
           <button className="text-red-600 hover:text-red-900 text-sm">
             Видалити
           </button>
@@ -154,8 +143,6 @@ export const AdminUser: React.FC = () => {
     },
   ];
 
-  // --- Визначення полів форми ---
-  // Використовуємо UpdateUser для обох сценаріїв, але пам'ятаємо про пароль для створення
   const userFormFields: FormField<UpdateUser>[] = [
     {
       name: "first_name",
@@ -206,25 +193,7 @@ export const AdminUser: React.FC = () => {
         },
       },
     },
-    {
-      name: "avatar_url",
-      label: "URL аватара",
-      type: "url", // Можливо, краще використати тип 'file' або 'custom' для завантаження
-      validation: {
-        pattern: { value: /^(https?:\/\/).*/i, message: "Введіть дійсний URL" },
-      },
-      preview: (value: string | null | undefined) =>
-        value && ( // Показуємо прев'ю тільки якщо є значення
-          <img
-            src={value}
-            alt="Аватар" // Краще додати alt
-            className="w-12 h-12 rounded-full object-cover border border-gray-200" // Збільшено розмір, додано рамку
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }} // Ховаємо при помилці
-          />
-        ),
-    },
+
     {
       name: "role",
       label: "Роль",
@@ -235,7 +204,6 @@ export const AdminUser: React.FC = () => {
       ],
       validation: { required: "Роль обов'язкова" },
     },
-    // Якщо потрібен пароль ТІЛЬКИ для створення, це ускладнює GenericForm.
     // Можливо, краще мати окрему логіку або модальне вікно для створення.
     {
       name: "password_hash", // Потрібно додати в тип CreateUser
@@ -245,9 +213,15 @@ export const AdminUser: React.FC = () => {
 
       // Потрібна умовна валідація
     },
+    // {
+    //   name: "avatar_url",
+    //   label: "Аватар користувача",
+    //   type: "file",
+    //   multiple: true,
+    //   accept: "image/*",
+    // },
   ];
 
-  // --- Функція рендерингу форми ОНОВЛЕННЯ ---
   const renderUserUpdateForm = useCallback(
     (user: User) => (
       <GenericForm<UpdateUser>
@@ -311,7 +285,6 @@ export const AdminUser: React.FC = () => {
       <GenericTable<User> // Вказуємо тип даних для таблиці
         // Переконуємось, що передаємо масив користувачів, а не весь об'єкт відповіді
         data={usersResponse || []} // Якщо useUsers повертає безпосередньо масив
-        // data={usersResponse?.data || []} // Якщо useUsers повертає { data: [...] }
         columns={columns}
         keyField="id"
         expandedRows={expandedRows}

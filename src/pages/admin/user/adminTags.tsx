@@ -26,7 +26,7 @@ export const AdminTags: React.FC = () => {
     async (nameId: number, data: UpdateTag) => {
       console.log(`Оновлення тегу з ID ${nameId}:`, data);
       try {
-        const apiUrl = `http://localhost:3000/brand/${nameId}`;
+        const apiUrl = `http://localhost:3000/tags/${nameId}`;
         const response = await axios.put(apiUrl, data, {});
         alert(`Колір ${data.name} успішно оновлено!`);
         toggleRow(nameId); // Згорнути рядок
@@ -43,11 +43,9 @@ export const AdminTags: React.FC = () => {
 
   const handleCreateSubmit = useCallback(
     async (data: UpdateTag) => {
-      // Приймає тип даних форми
       console.log("Створення нового тегу:", data);
-      // Тут ваш API виклик для СТВОРЕННЯ
       try {
-        const apiUrl = "http://localhost:3000/brand";
+        const apiUrl = "http://localhost:3000/tags";
         const response = await axios.post(apiUrl, data, {});
 
         alert(`Тег ${data.name} успішно створено!`);
@@ -65,7 +63,6 @@ export const AdminTags: React.FC = () => {
     [refetchProducts],
   ); // Додано залежності
 
-  // --- Визначення колонок таблиці ---
   const columns = [
     { header: "ID", key: "id", width: "10%" },
     {
@@ -76,8 +73,7 @@ export const AdminTags: React.FC = () => {
         <div className="flex items-center">
           <div className="text-sm font-medium text-gray-900 truncate">
             {item.name}
-          </div>{" "}
-          {/* Додано truncate */}
+          </div>
         </div>
       ),
     },

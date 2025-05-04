@@ -1,15 +1,9 @@
 import { useState } from "react";
-import Button from "../UI/AnchorButton";
 import NewsletterSignUpWoman from "../assets/NewsletterSignUpWoman.png";
 import NewsletterSignUpMan from "../assets/NewsletterSignUpMan.png";
-import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "../UI/AnchorButton";
 
 export const NewsletterSignUp: React.FC = () => {
-  // const newTan = useQueryClient()
-
-  // const data = newTan.getQueryData(["Filter"])
-  // console.log("зовніщнє", data);
-
   const [inputValue, setInputValue] = useState("");
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,14 +19,11 @@ export const NewsletterSignUp: React.FC = () => {
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center min-h-[400px] lg:min-h-[500px] gap-8">
         {/* Increased minimum height for better spacing */}
         <div className="w-full md:w-1/4">
-          {" "}
-          {/* Responsive widths for images */}
           <img
             src={NewsletterSignUpMan}
             alt="man"
             className="w-full h-auto object-cover"
-          />{" "}
-          {/*Responsive img*/}
+          />
         </div>
 
         <div className="flex flex-col items-center justify-center text-center md:w-1/2">

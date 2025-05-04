@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Button from "../UI/AnchorButton";
+import { Button } from "../UI/AnchorButton";
 
 interface TimerProps {
   targetDate: string;

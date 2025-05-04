@@ -59,36 +59,60 @@ export function useCrudOperations<TCreateData, TUpdateData>({
   const createItem = useCallback(
     async (data: TCreateData): Promise<any> => {
       try {
+        // Визначаємо правильні заголовки в залежності від типу даних
+        const headers =
+          data instanceof FormData
+            ? undefined // axios автоматично встановить правильний Content-Type для FormData
+            : { "Content-Type": "application/json" };
+
         const response = await axios.post(`${apiUrlBase}${apiEndpoint}`, data, {
-          withCredentials: true, // Зберігаємо, якщо потрібно для POST
+          withCredentials: true,
+          headers,
         });
-        alert(
-          `${resourceName} "${(data as any)?.name || ""}" успішно створено!`,
-        ); // Спробуємо показати ім'я, якщо є
+
+        // Отримуємо ім'я об'єкта для повідомлення, якщо це не FormData
+        let objectName = "";
+        if (!(data instanceof FormData) && (data as any)?.name) {
+          objectName = (data as any).name;
+        }
+
+        alert(`${resourceName} "${objectName}" успішно створено!`);
         refetch();
         if (onSuccess) onSuccess("create", response.data);
-        return response.data; // Повертаємо дані створеного елемента
+        return response.data;
       } catch (error) {
         handleApiError(error as AxiosError<ApiError>, "create");
-        throw error; // Перекидаємо помилку далі, щоб компонент міг на неї реагувати (опціонально)
+        throw error;
       }
     },
-    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess, onError],
-  ); // Додано onError
+    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess],
+  );
 
   const updateItem = useCallback(
     async (id: number | string, data: TUpdateData): Promise<any> => {
       try {
+        // Визначаємо правильні заголовки в залежності від типу даних
+        const headers =
+          data instanceof FormData
+            ? undefined // axios автоматично встановить правильний Content-Type для FormData
+            : { "Content-Type": "application/json" };
+
         const response = await axios.put(
           `${apiUrlBase}${apiEndpoint}/${id}`,
           data,
           {
-            // Можливо, тут теж потрібен withCredentials: true?
+            withCredentials: true,
+            headers,
           },
         );
-        alert(
-          `${resourceName} "${(data as any)?.name || ""}" успішно оновлено!`,
-        );
+
+        // Отримуємо ім'я об'єкта для повідомлення, якщо це не FormData
+        let objectName = "";
+        if (!(data instanceof FormData) && (data as any)?.name) {
+          objectName = (data as any).name;
+        }
+
+        alert(`${resourceName} "${objectName}" успішно оновлено!`);
         refetch();
         if (onSuccess) onSuccess("update", response.data);
         return response.data;
@@ -97,8 +121,8 @@ export function useCrudOperations<TCreateData, TUpdateData>({
         throw error;
       }
     },
-    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess, onError],
-  ); // Додано onError
+    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess],
+  );
 
   const deleteItem = useCallback(
     async (id: number | string): Promise<void> => {
@@ -113,7 +137,7 @@ export function useCrudOperations<TCreateData, TUpdateData>({
 
       try {
         await axios.delete(`${apiUrlBase}${apiEndpoint}/${id}`, {
-          withCredentials: true, // Якщо потрібно для DELETE
+          withCredentials: true,
         });
         alert(`${resourceName} з ID ${id} успішно видалено!`);
         refetch();
@@ -123,8 +147,8 @@ export function useCrudOperations<TCreateData, TUpdateData>({
         throw error;
       }
     },
-    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess, onError],
-  ); // Додано onError
+    [apiUrlBase, apiEndpoint, resourceName, refetch, onSuccess],
+  );
 
   return { createItem, updateItem, deleteItem };
 }

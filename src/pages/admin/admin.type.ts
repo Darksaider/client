@@ -11,6 +11,7 @@ export interface CartItem {
   product_id: number;
   quantity?: number;
   added_at?: Date;
+  products: Product;
 }
 
 // categories
@@ -48,6 +49,7 @@ export interface Favorite {
   user_id: number;
   product_id: number;
   added_at?: Date;
+  product?: Product;
 }
 
 // product_brands
@@ -69,7 +71,7 @@ export interface ProductPhoto {
   id: number;
   product_id: number;
   photo_url: string;
-  position?: number;
+  cloudinary_public_id: string;
   created_at?: Date;
 }
 
@@ -94,6 +96,7 @@ export interface Product {
   description?: string;
   price: number; // DECIMAL(10,2) => number
   stock?: number;
+  discounted_price?: string;
   sales_count?: number;
   created_at?: Date;
   updated_at?: Date;
@@ -202,10 +205,9 @@ export type UpdateTag = Partial<Tag> & Pick<Tag, "id">;
 export type CreateUser = Omit<User, "id" | "created_at" | "updated_at"> & {
   password: string;
 };
-export type UpdateUser = Partial<Omit<User, "created_at" | "updated_at">> &
-  Pick<User, "id"> & {
-    password_hash?: string;
-  };
+export type UpdateUser = Partial<Omit<User, "created_at" | "updated_at">> & {
+  password_hash?: string;
+};
 
 // ---------------------- ProductCategories ----------------------
 export type CreateProductCategory = Omit<ProductCategory, "id">;
@@ -295,7 +297,7 @@ interface ProductPhotoNew {
   id: number;
   product_id: number;
   photo_url: string;
-  position: number;
+  cloudinary_public_id: string;
   created_at: string;
 }
 

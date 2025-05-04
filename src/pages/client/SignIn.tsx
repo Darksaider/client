@@ -5,6 +5,7 @@ import { LoginForm } from "../../components/forms/Loginform";
 export const SingInPage: React.FC = () => {
   return (
     <AuthLayout>
+      <title></title>
       <LoginForm />
       <div className="text-sm text-gray-500 mt-8">
         Натискаючи "Увійти", ви погоджуєтесь з

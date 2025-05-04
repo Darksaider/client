@@ -1,74 +1,63 @@
 import React, { useState, useCallback } from "react"; // Додано useState, useCallback
-import { useFilter } from "../../../hooks/useFilter";
-import { useProducts } from "../../../hooks/useProduct"; // Переконайтесь, що useProducts повертає refetch
-import { Brand, UpdateBrand } from "../admin.type";
+import { Brand, CreateBrand, UpdateBrand } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
 import { useExpandableRows } from "./useExpandableRows";
-import axios from "axios";
+import { useBrands } from "./hooks";
+import { useCrudOperations } from "../../../hooks/useCrud";
 
 const initialBrandValues: Partial<UpdateBrand> = {
   name: "",
 };
 
 export const AdminBrands: React.FC = () => {
-  // --- Хуки ---
-  const {
-    data: productResponse,
-    isLoading,
-    refetch: refetchProducts,
-  } = useProducts(); // Додано refetch
-  const { data: filter, isLoading: filterIsLoading } = useFilter(true);
+  const { data, isLoading, refetch: refetchBrands } = useBrands(true);
   const { expandedRows, toggleRow } = useExpandableRows<number>([]); // Додано setExpandedRows
+  const apiUrlBase = import.meta.env.VITE_API_URL;
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false); // Стан для показу форми створення
-
-  // --- Обробники Submit ---
+  const { createItem, updateItem, deleteItem } = useCrudOperations<
+    UpdateBrand,
+    UpdateBrand
+  >({
+    // <-- Оновлені типи
+    resourceName: "Знижка",
+    apiEndpoint: "/brands",
+    apiUrlBase: apiUrlBase,
+    refetch: refetchBrands,
+  });
   const handleUpdateSubmit = useCallback(
     async (brandId: number, data: UpdateBrand) => {
-      console.log(`Оновлення бренду з ID ${brandId}:`, data);
       try {
-        const apiUrl = `http://localhost:3000/brand/${brandId}`;
-        const response = await axios.put(apiUrl, data, {});
-        alert(`Продукт ${data.name} успішно оновлено!`);
-        toggleRow(brandId); // Згорнути рядок
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
-        }
+        await updateItem(brandId, data);
+        toggleRow(brandId);
       } catch (error) {
         console.error("Помилка оновлення продукту:", error);
-        alert("Помилка оновлення продукту");
       }
     },
-    [refetchProducts, toggleRow],
-  ); // Додано залежності
+    [updateItem, toggleRow],
+  );
 
   const handleCreateSubmit = useCallback(
     async (data: UpdateBrand) => {
-      // Приймає тип даних форми
-      console.log("Створення нового продукту:", data);
-      // Тут ваш API виклик для СТВОРЕННЯ
+      await createItem(data);
       try {
-        const apiUrl = "http://localhost:3000/brands";
-        const response = await axios.post(apiUrl, data, {
-          withCredentials: true,
-        });
-
-        alert(`Продукт ${data.name} успішно створено!`);
-        setShowCreateForm(false);
-        console.log(response.data);
-
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
-        }
       } catch (error) {
         console.error("Помилка створення продукту:", error);
-        alert("Помилка створення бренду");
       }
     },
-    [refetchProducts],
+    [createItem],
+  ); // Додано залежності
+  const handleDeleteSubmit = useCallback(
+    async (brandId: number) => {
+      await deleteItem(brandId);
+      try {
+      } catch (error) {
+        console.error("Помилка створення продукту:", error);
+      }
+    },
+    [deleteItem],
   ); // Додано залежності
 
-  // --- Визначення колонок таблиці ---
   const columns = [
     { header: "ID", key: "id", width: "10%" },
     {
@@ -79,8 +68,7 @@ export const AdminBrands: React.FC = () => {
         <div className="flex items-center">
           <div className="text-sm font-medium text-gray-900 truncate">
             {brand.name}
-          </div>{" "}
-          {/* Додано truncate */}
+          </div>
         </div>
       ),
     },
@@ -90,17 +78,16 @@ export const AdminBrands: React.FC = () => {
       width: "15%",
       render: (brand: Brand) => (
         <div className="flex space-x-2">
-          {" "}
-          {/* Обгортка для кнопок */}
           <button
             onClick={() => toggleRow(brand.id)}
             className="text-indigo-600 hover:text-indigo-900 text-sm" // Зменшено шрифт
           >
             {expandedRows.includes(brand.id) ? "Згорнути" : "Редагувати"}
           </button>
-          <button className="text-red-600 hover:text-red-900 text-sm">
-            {" "}
-            {/* Додайте onClick для видалення */}
+          <button
+            onClick={() => handleDeleteSubmit(brand.id)}
+            className="text-red-600 hover:text-red-900 text-sm"
+          >
             Видалити
           </button>
         </div>
@@ -108,8 +95,6 @@ export const AdminBrands: React.FC = () => {
     },
   ];
 
-  // --- Визначення полів форми ---
-  // Важливо: Тип тепер <UpdateProductNew>, бо ми використовуємо його для обох сценаріїв
   const productFormFields: FormField<UpdateBrand>[] = [
     {
       name: "name",
@@ -142,13 +127,10 @@ export const AdminBrands: React.FC = () => {
   // --- Рендеринг компонента ---
   return (
     <div className="p-4 mx-auto max-w-7xl">
-      {" "}
-      {/* Обмежено ширину */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Управління Брендами
         </h1>{" "}
-        {/* Змінено колір */}
         {!showCreateForm && ( // Показуємо кнопку тільки якщо форма створення не активна
           <button
             onClick={() => {
@@ -182,13 +164,13 @@ export const AdminBrands: React.FC = () => {
         </div>
       )}
       <GenericTable<Brand> // Вказуємо тип даних для таблиці
-        data={filter?.brands || []}
+        data={data || []}
         columns={columns}
         keyField="id"
         expandedRows={expandedRows}
         onRowToggle={toggleRow}
         renderExpandedContent={renderProductUpdateForm} // Передаємо функцію рендерингу форми оновлення
-        isLoading={isLoading || filterIsLoading} // Об'єднано isLoading
+        isLoading={isLoading} // Об'єднано isLoading
         emptyMessage="Немає брендів для відображення." // Змінено текст
       />
     </div>

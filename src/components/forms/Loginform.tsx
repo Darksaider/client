@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Input from "../../UI/Input";
 import googleIcon from "../../assets/google.svg";
-import Button from "../../UI/AnchorButton";
-import axios from "axios";
 import { NavLink, useNavigate } from "react-router";
 import { IFormSingInInput, ServerResponse } from "../../types/types";
 import { useAuth } from "../../hooks/useLogin";
+import { Button } from "../../UI/AnchorButton";
+import apiClient from "../../hooks/apiClient";
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoggedIn } = useAuth();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [serverResponse, setServerResponse] = useState<ServerResponse | null>(
     null,
@@ -25,17 +25,10 @@ export const LoginForm: React.FC = () => {
   const onSubmit: SubmitHandler<IFormSingInInput> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/users/login",
-        {
-          email: data.email,
-          password_hash: data.password,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      console.log(response.data.token);
+      const response = await apiClient.post("/users/login", {
+        email: data.email,
+        password_hash: data.password,
+      });
       login(response.data.user);
       setServerResponse({
         success: true,
@@ -45,9 +38,8 @@ export const LoginForm: React.FC = () => {
       });
       reset();
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage =
-          error.response?.data?.message || "Помилка при вході";
+      if (error) {
+        const errorMessage = "Не правильний логін або пароль";
         setServerResponse({
           success: false,
           message: errorMessage,
@@ -173,7 +165,6 @@ export const LoginForm: React.FC = () => {
           className="font-medium text-black hover:text-gray-800"
           to={"/register"}
         >
-          {" "}
           Зареєструватися
         </NavLink>
       </p>

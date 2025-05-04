@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 // Використовуй правильний імпорт для useSearchParams залежно від версії react-router
 import { useSearchParams, URLSearchParamsInit } from "react-router";
 
-const ITEMS_PER_PAGE: number = 10;
+const ITEMS_PER_PAGE: number = 12;
 const SIBLING_COUNT: number = 1;
 const ELLIPSIS: string = "...";
 // -----------------------------

@@ -5,6 +5,7 @@ import apiClient from "./apiClient";
 interface AuthUserData {
   role: string | null;
   email: string | null;
+  id: string | null;
   // Можна додати інші поля, якщо потрібно, напр. email, id
 }
 
@@ -22,11 +23,13 @@ const LOCAL_STORAGE_KEYS = {
   isLoggedIn: "isLoggedIn",
   userRole: "userRole",
   userEmail: "userEmail",
+  userId: "userId",
 };
 
 export function useAuth(): AuthState {
   // --- Стан хука ---
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Починаємо зі стану завантаження
@@ -38,6 +41,7 @@ export function useAuth(): AuthState {
       localStorage.getItem(LOCAL_STORAGE_KEYS.isLoggedIn) === "true";
     const storedRole = localStorage.getItem(LOCAL_STORAGE_KEYS.userRole);
     const storedUserEmail = localStorage.getItem(LOCAL_STORAGE_KEYS.userEmail);
+    const storedUserId = localStorage.getItem(LOCAL_STORAGE_KEYS.userId);
 
     // 2. Оновити стан для миттєвого відображення UI
     // Навіть якщо токен не валідний, ми тимчасово покажемо дані,
@@ -46,6 +50,7 @@ export function useAuth(): AuthState {
       setIsLoggedIn(true);
       setUserRole(storedRole);
       setUserEmail(storedUserEmail);
+      setUserId(storedUserId);
     }
 
     // 3. Верифікувати стан на сервері (перевірити HttpOnly cookie)
@@ -59,12 +64,14 @@ export function useAuth(): AuthState {
           role: string;
           email: string;
         }>("/me"); // Або /api/auth/status
+        console.log(response);
 
         // Якщо запит успішний (токен валідний)
         const serverUserData = response.data;
         setIsLoggedIn(true);
         setUserRole(serverUserData.role);
         setUserEmail(serverUserData.email);
+        setUserId(serverUserData.id.toString());
 
         // Оновити localStorage на випадок, якщо дані змінилися
         localStorage.setItem(LOCAL_STORAGE_KEYS.isLoggedIn, "true");
@@ -109,6 +116,7 @@ export function useAuth(): AuthState {
       setIsLoggedIn(true);
       setUserRole(userData.role);
       setUserEmail(userData.email);
+      setUserEmail(userData.id);
     } catch (error) {
       console.error("Failed to save auth state to localStorage:", error);
       // Тут можна обробити помилку, якщо localStorage недоступний
@@ -129,6 +137,7 @@ export function useAuth(): AuthState {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.isLoggedIn);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.userRole);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.userEmail);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.userId);
 
       // 3. Очистити стан
       setIsLoggedIn(false);
@@ -147,6 +156,7 @@ export function useAuth(): AuthState {
     isLoggedIn,
     role: userRole,
     email: userEmail,
+    id: userId,
     isLoading,
     login,
     logout,

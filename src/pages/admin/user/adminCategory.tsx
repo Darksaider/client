@@ -3,51 +3,65 @@ import { Category, UpdateCategory } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
 import { useExpandableRows } from "./useExpandableRows";
-import axios from "axios";
 import { useCategories } from "./hooks";
+import { useCrudOperations } from "../../../hooks/useCrud";
 
 const initialBrandValues: Partial<UpdateCategory> = {
   name: "",
 };
 
 export const AdminCategories: React.FC = () => {
+  const apiUrlBase = import.meta.env.VITE_API_URL;
   const {
     data: categoriesData,
     refetch: refetchCategories,
     isLoading,
   } = useCategories(true);
+  const { createItem, updateItem, deleteItem } = useCrudOperations<
+    Partial<UpdateCategory>,
+    UpdateCategory
+  >({
+    // <-- Оновлені типи
+    resourceName: "Знижка",
+    apiEndpoint: "/categories",
+    apiUrlBase: apiUrlBase,
+    refetch: refetchCategories,
+  });
   const { expandedRows, toggleRow } = useExpandableRows<number>([]);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
 
   const handleUpdateSubmit = useCallback(
-    async (brandId: number, data: UpdateCategory) => {},
-    [, toggleRow],
-  ); // Додано залежності
-
-  const handleCreateSubmit = useCallback(
-    async (data: UpdateCategory) => {
-      // Приймає тип даних форми
-      console.log("Створення нового категорії:", data);
-      // Тут ваш API виклик для СТВОРЕННЯ
+    async (brandId: number, data: UpdateCategory) => {
       try {
-        const apiUrl = "http://localhost:3000/category";
-        const response = await axios.post(apiUrl, data, {
-          withCredentials: true,
-        });
-
-        alert(`Продукт ${data.name} успішно створено!`);
-        setShowCreateForm(false);
-        console.log(response.data);
-
-        if (refetchCategories) {
-          refetchCategories();
-        }
+        await updateItem(brandId, data);
       } catch (error) {
-        console.error("Помилка створення категорії:", error);
-        alert("Помилка створення категорії");
+        console.error("Помилка оновлення в компоненті:", error);
       }
     },
-    [refetchCategories],
+    [updateItem, toggleRow],
+  );
+
+  const handleCreateSubmit = useCallback(
+    async (data: Partial<UpdateCategory>) => {
+      try {
+        await createItem(data);
+        setShowCreateForm(false);
+      } catch (error) {
+        console.error("Помилка створення категорії:", error);
+      }
+    },
+    [createItem],
+  );
+
+  const handleDeleteClick = useCallback(
+    async (brandId: number) => {
+      try {
+        await deleteItem(brandId);
+      } catch (error) {
+        console.error("Помилка створення категорії:", error);
+      }
+    },
+    [deleteItem],
   );
 
   const columns = [
@@ -68,17 +82,18 @@ export const AdminCategories: React.FC = () => {
       header: "Дії",
       key: "actions",
       width: "15%",
-      render: (brand: Category) => (
+      render: (category: Category) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => toggleRow(brand.id)}
+            onClick={() => toggleRow(category.id)}
             className="text-indigo-600 hover:text-indigo-900 text-sm" // Зменшено шрифт
           >
-            {expandedRows.includes(brand.id) ? "Згорнути" : "Редагувати"}
+            {expandedRows.includes(category.id) ? "Згорнути" : "Редагувати"}
           </button>
-          <button className="text-red-600 hover:text-red-900 text-sm">
-            {" "}
-            {/* Додайте onClick для видалення */}
+          <button
+            onClick={() => handleDeleteClick(category.id)}
+            className="text-red-600 hover:text-red-900 text-sm"
+          >
             Видалити
           </button>
         </div>

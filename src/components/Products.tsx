@@ -18,7 +18,7 @@ export const Products: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-4.5 p-2.5">
+    <div className="grid grid-cols-3 gap-4.5 p-2.5 w-full">
       {ProductData.data.products.map((product) => (
         <ProductItem
           key={product.id}

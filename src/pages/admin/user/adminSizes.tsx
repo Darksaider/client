@@ -1,11 +1,10 @@
 import React, { useState, useCallback } from "react"; // Додано useState, useCallback
-import { useFilter } from "../../../hooks/useFilter";
-import { useProducts } from "../../../hooks/useProduct"; // Переконайтесь, що useProducts повертає refetch
 import { Size, UpdateSize } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
 import { useExpandableRows } from "./useExpandableRows";
 import axios from "axios";
+import { useSizes } from "./hooks";
 
 const initialSizeValues: Partial<UpdateSize> = {
   size: "",
@@ -14,11 +13,10 @@ const initialSizeValues: Partial<UpdateSize> = {
 export const AdminSizes: React.FC = () => {
   // --- Хуки ---
   const {
-    data: productResponse,
-    isLoading,
-    refetch: refetchProducts,
-  } = useProducts();
-  const { data: filter, isLoading: filterIsLoading } = useFilter(true);
+    data: dataSizes,
+    isLoading: sizesIsLoading,
+    refetch: refetchSizes,
+  } = useSizes(true);
   const { expandedRows, toggleRow } = useExpandableRows<number>([]);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
 
@@ -27,21 +25,19 @@ export const AdminSizes: React.FC = () => {
       console.log(`Оновлення розміру з ID ${sizeId}:`, data);
       // Тут ваш API виклик для ОНОВЛЕННЯ
       try {
-        // await api.updateProduct(productId, data); // Замініть на
-        // реальний виклик
-        const apiUrl = `http://localhost:3000/brand/${sizeId}`;
-        const response = await axios.put(apiUrl, data, {});
+        const apiUrl = `http://localhost:3000/sizes/${sizeId}`;
+        await axios.put(apiUrl, { size: data.size }, {});
         alert(`Колір ${data.size} успішно оновлено!`);
         toggleRow(sizeId); // Згорнути рядок
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
+        if (refetchSizes) {
+          refetchSizes(); // Оновити таблицю
         }
       } catch (error) {
         console.error("Помилка оновлення розміру:", error);
         alert("Помилка оновлення розміру");
       }
     },
-    [refetchProducts, toggleRow],
+    [refetchSizes, toggleRow],
   ); // Додано залежності
 
   const handleCreateSubmit = useCallback(
@@ -50,25 +46,24 @@ export const AdminSizes: React.FC = () => {
       console.log("Створення нового розміру:", data);
       // Тут ваш API виклик для СТВОРЕННЯ
       try {
-        const apiUrl = "http://localhost:3000/brand";
+        const apiUrl = "http://localhost:3000/sizes";
         const response = await axios.post(apiUrl, data, {});
 
         alert(`Продукт ${data.size} успішно створено!`);
         setShowCreateForm(false);
         console.log(response.data);
 
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
+        if (refetchSizes) {
+          refetchSizes(); // Оновити таблицю
         }
       } catch (error) {
         console.error("Помилка створення розміру:", error);
         alert("Помилка створення розміру");
       }
     },
-    [refetchProducts],
+    [refetchSizes],
   ); // Додано залежності
 
-  // --- Визначення колонок таблиці ---
   const columns = [
     { header: "ID", key: "id", width: "10%" },
     {
@@ -79,8 +74,7 @@ export const AdminSizes: React.FC = () => {
         <div className="flex items-center">
           <div className="text-sm font-medium text-gray-900 truncate">
             {item.size}
-          </div>{" "}
-          {/* Додано truncate */}
+          </div>
         </div>
       ),
     },
@@ -91,8 +85,6 @@ export const AdminSizes: React.FC = () => {
       width: "15%",
       render: (Size: Size) => (
         <div className="flex space-x-2">
-          {" "}
-          {/* Обгортка для кнопок */}
           <button
             onClick={() => toggleRow(Size.id)}
             className="text-indigo-600 hover:text-indigo-900 text-sm" // Зменшено шрифт
@@ -100,8 +92,6 @@ export const AdminSizes: React.FC = () => {
             {expandedRows.includes(Size.id) ? "Згорнути" : "Редагувати"}
           </button>
           <button className="text-red-600 hover:text-red-900 text-sm">
-            {" "}
-            {/* Додайте onClick для видалення */}
             Видалити
           </button>
         </div>
@@ -163,8 +153,6 @@ export const AdminSizes: React.FC = () => {
       {/* --- Форма СТВОРЕННЯ (якщо активна) --- */}
       {showCreateForm && (
         <div className="mb-6 border p-4 rounded-lg bg-white shadow-md">
-          {" "}
-          {/* Змінено стиль обгортки */}
           <GenericForm<UpdateSize>
             key="create-form"
             fields={productFormFields}
@@ -183,13 +171,13 @@ export const AdminSizes: React.FC = () => {
         </div>
       )}
       <GenericTable<Size>
-        data={filter?.sizes || []}
+        data={dataSizes || []}
         columns={columns}
         keyField="id"
         expandedRows={expandedRows}
         onRowToggle={toggleRow}
         renderExpandedContent={renderProductUpdateForm} // Передаємо функцію рендерингу форми оновлення
-        isLoading={isLoading || filterIsLoading} // Об'єднано isLoading
+        isLoading={sizesIsLoading} // Об'єднано isLoading
         emptyMessage="Немає кольорів для відображення." // Змінено текст
       />
     </div>

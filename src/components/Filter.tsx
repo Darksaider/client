@@ -47,7 +47,7 @@ export const Filter: React.FC = () => {
     });
   };
 
-  if (isLoading) return <div>Loading filters...</div>;
+  if (isLoading) return <div>Завантаження фільтрації...</div>;
   const renderFilterSection = (
     title: string,
     type: "categories" | "brands" | "tags",
@@ -81,7 +81,7 @@ export const Filter: React.FC = () => {
           <input
             type="text"
             className="flex-grow p-2 border rounded-l"
-            placeholder="Search products..."
+            placeholder="Пошук продуктів..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -89,7 +89,7 @@ export const Filter: React.FC = () => {
             type="submit"
             className="px-6 py-4 text-white bg-black  rounded-r "
           >
-            Search
+            Пошук
           </button>
         </form>
       </div>
@@ -100,7 +100,7 @@ export const Filter: React.FC = () => {
           <input
             type="number"
             className="w-24 p-2 border rounded"
-            placeholder="Min"
+            placeholder="Мін.."
             value={priceRange.min}
             onChange={(e) =>
               setPriceRange({ ...priceRange, min: e.target.value })
@@ -111,7 +111,7 @@ export const Filter: React.FC = () => {
           <input
             type="number"
             className="w-24 p-2 border rounded"
-            placeholder="Max"
+            placeholder="Макс.."
             value={priceRange.max}
             onChange={(e) =>
               setPriceRange({ ...priceRange, max: e.target.value })

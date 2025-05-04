@@ -1,11 +1,10 @@
 import React, { useState, useCallback } from "react"; // Додано useState, useCallback
-import { useFilter } from "../../../hooks/useFilter";
-import { useProducts } from "../../../hooks/useProduct"; // Переконайтесь, що useProducts повертає refetch
 import { Color, UpdateColor } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
 import { useExpandableRows } from "./useExpandableRows";
 import axios from "axios";
+import { useColors } from "./hooks";
 
 const initialColorValues: Partial<UpdateColor> = {
   name: "",
@@ -13,36 +12,31 @@ const initialColorValues: Partial<UpdateColor> = {
 };
 
 export const AdminColor: React.FC = () => {
-  // --- Хуки ---
+  // const { data: filter, isLoading: filterIsLoading , refe } = useFilter(true);
   const {
-    data: productResponse,
-    isLoading,
-    refetch: refetchProducts,
-  } = useProducts();
-  const { data: filter, isLoading: filterIsLoading } = useFilter(true);
+    data: colors,
+    isLoading: colorsIsLoading,
+    refetch: refetchColors,
+  } = useColors(true);
   const { expandedRows, toggleRow } = useExpandableRows<number>([]);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
 
   const handleUpdateSubmit = useCallback(
     async (brandId: number, data: UpdateColor) => {
-      console.log(`Оновлення кольору з ID ${brandId}:`, data);
-      // Тут ваш API виклик для ОНОВЛЕННЯ
       try {
-        // await api.updateProduct(productId, data); // Замініть на
-        // реальний виклик
-        const apiUrl = `http://localhost:3000/brand/${brandId}`;
+        const apiUrl = `http://localhost:3000/colors/${brandId}`;
         const response = await axios.put(apiUrl, data, {});
         alert(`Колір ${data.name} успішно оновлено!`);
         toggleRow(brandId); // Згорнути рядок
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
+        if (refetchColors) {
+          refetchColors(); // Оновити таблицю
         }
       } catch (error) {
         console.error("Помилка оновлення кольору:", error);
         alert("Помилка оновлення кольору");
       }
     },
-    [refetchProducts, toggleRow],
+    [refetchColors, toggleRow],
   ); // Додано залежності
 
   const handleCreateSubmit = useCallback(
@@ -51,22 +45,21 @@ export const AdminColor: React.FC = () => {
       console.log("Створення нового кольору:", data);
       // Тут ваш API виклик для СТВОРЕННЯ
       try {
-        const apiUrl = "http://localhost:3000/brand";
+        const apiUrl = "http://localhost:3000/colors";
         const response = await axios.post(apiUrl, data, {});
 
         alert(`Продукт ${data.name} успішно створено!`);
         setShowCreateForm(false);
-        console.log(response.data);
 
-        if (refetchProducts) {
-          refetchProducts(); // Оновити таблицю
+        if (refetchColors) {
+          refetchColors(); // Оновити таблицю
         }
       } catch (error) {
         console.error("Помилка створення кольору:", error);
         alert("Помилка створення кольору");
       }
     },
-    [refetchProducts],
+    [refetchColors, setShowCreateForm],
   ); // Додано залежності
 
   // --- Визначення колонок таблиці ---
@@ -211,13 +204,13 @@ export const AdminColor: React.FC = () => {
         </div>
       )}
       <GenericTable<Color> // Вказуємо тип даних для таблиці
-        data={filter?.colors || []}
+        data={colors || []}
         columns={columns}
         keyField="id"
         expandedRows={expandedRows}
         onRowToggle={toggleRow}
         renderExpandedContent={renderProductUpdateForm} // Передаємо функцію рендерингу форми оновлення
-        isLoading={isLoading || filterIsLoading} // Об'єднано isLoading
+        isLoading={colorsIsLoading} // Об'єднано isLoading
         emptyMessage="Немає продуктів для відображення." // Змінено текст
       />
     </div>

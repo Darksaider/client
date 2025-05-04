@@ -4,8 +4,8 @@ import axios from "axios";
 import { NavLink, useNavigate } from "react-router"; // Імпортуємо для перенаправлення
 import Input from "../../UI/Input";
 import googleIcon from "../../assets/google.svg";
-import Button from "../../UI/AnchorButton";
 import { IFormRegisterInput, ServerResponse } from "../../types/types";
+import { Button } from "../../UI/AnchorButton";
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate(); // Ініціалізуємо hook для навігації

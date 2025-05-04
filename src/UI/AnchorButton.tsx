@@ -7,7 +7,7 @@ interface GoogleAuthLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void; // Optional onClick handler
 }
 
-const GoogleAuthLink: React.FC<GoogleAuthLinkProps> = ({
+export const Button: React.FC<GoogleAuthLinkProps> = ({
   className,
   children,
   href,
@@ -30,5 +30,3 @@ const GoogleAuthLink: React.FC<GoogleAuthLinkProps> = ({
     </a>
   );
 };
-
-export default GoogleAuthLink;

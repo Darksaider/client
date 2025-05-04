@@ -5,7 +5,7 @@ import { IFilter, IFilterResponse } from "../types/types";
 
 const getDataFilter = async () => {
   const response = await axios.get<IFilterResponse<IFilter>>(
-    "http://localhost:3000/get",
+    "http://localhost:3000/getAll",
   );
   return response.data.data;
 };
