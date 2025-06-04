@@ -4,22 +4,21 @@ import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { CartItem, createOrder, OrderFormData } from "./orderApi";
 import { NovaPoshtaBranchSelector } from "../../pages/client/novapost";
+import { useAuth } from "../../hooks/useLogin";
 
 interface CheckoutFormProps {
   cartItems: CartItem[];
-  userId: number;
   onOrderCreated?: (orderId: number) => void;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({
   cartItems,
-  userId,
   onOrderCreated,
 }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { id: userId } = useAuth();
   const {
     control,
     register,

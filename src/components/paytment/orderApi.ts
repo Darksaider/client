@@ -39,9 +39,11 @@ export const createOrder = async (
 
     // Підготовка елементів замовлення
     const items = cartItems.map((item) => ({
-      productId: item.products.id,
+      productId: item.product_id,
+      sizeId: item.size.id,
+      colorId: item.color.id,
       quantity: item.quantity,
-      price: item.products.price,
+      price: item.price,
     }));
 
     // Відправка запиту на створення замовлення

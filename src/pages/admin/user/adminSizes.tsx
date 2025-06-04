@@ -2,9 +2,9 @@ import React, { useState, useCallback } from "react"; // Додано useState, 
 import { Size, UpdateSize } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
 import axios from "axios";
-import { useSizes } from "./hooks";
+import { useSizes } from "../../../hooks/hooks";
 
 const initialSizeValues: Partial<UpdateSize> = {
   size: "",

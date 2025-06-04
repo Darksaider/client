@@ -6,6 +6,7 @@ import Input from "../../UI/Input";
 import googleIcon from "../../assets/google.svg";
 import { IFormRegisterInput, ServerResponse } from "../../types/types";
 import { Button } from "../../UI/AnchorButton";
+import apiClient from "../../hooks/apiClient";
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate(); // Ініціалізуємо hook для навігації
@@ -37,7 +38,7 @@ export const RegisterForm: React.FC = () => {
     setServerResponse(null);
 
     try {
-      const response = await axios.post("http://localhost:3000/users", {
+      const response = await apiClient.post("/users", {
         first_name: data.name,
         last_name: data.lastName,
         phone_number: data.phone,
@@ -204,7 +205,6 @@ export const RegisterForm: React.FC = () => {
           className="font-medium text-black hover:text-gray-800"
           to={"/singIn"}
         >
-          {" "}
           Увійти
         </NavLink>
       </p>

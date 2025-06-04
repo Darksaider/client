@@ -375,22 +375,33 @@ export function GenericForm<T extends FieldValues>({
   // Modify onSubmit to work with form including files
   const handleFormSubmit = useCallback(
     (data: T) => {
-      // Before submitting the form, transform data for each field of type "file"
-      const processedData = { ...data };
+      const processedData: any = { ...data };
 
       fields.forEach((field) => {
         if (field.type === "file") {
-          const fieldName = String(field.name);
-          const fileData = data[field.name] as any;
-
-          // Replace with structured data for backend
-          processedData[field.name] = {
-            newFiles: uploadedFiles[fieldName] || [],
-            existingImagesIds: (existingImages[fieldName] || []).map(
+          const name = String(field.name);
+          const wrapper = {
+            newFiles: uploadedFiles[name] || [],
+            existingImagesIds: (existingImages[name] || []).map(
               (img) => img.id,
             ),
-            imagesToDelete: imagesToDelete[fieldName] || [],
-          } as any;
+            imagesToDelete: imagesToDelete[name] || [],
+          };
+          console.log(wrapper);
+
+          if (field.multiple) {
+            // залишаємо всю структуру для кількох файлів
+            processedData[name] = wrapper;
+          } else {
+            // тільки один файл – беремо пріоритет: новий → вже існуючий → null
+            if (wrapper.newFiles.length) {
+              processedData[name] = wrapper.newFiles;
+            } else if (wrapper.existingImagesIds.length) {
+              processedData[name] = wrapper.existingImagesIds[0];
+            } else {
+              processedData[name] = null;
+            }
+          }
         }
       });
 

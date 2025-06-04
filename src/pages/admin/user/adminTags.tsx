@@ -4,7 +4,7 @@ import { useProducts } from "../../../hooks/useProduct"; // Переконайт
 import { Tag, UpdateTag } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
 import axios from "axios";
 
 const initialnameValues: Partial<UpdateTag> = {

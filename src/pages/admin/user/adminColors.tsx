@@ -2,9 +2,9 @@ import React, { useState, useCallback } from "react"; // Додано useState, 
 import { Color, UpdateColor } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
-import axios from "axios";
-import { useColors } from "./hooks";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
+import { useColors } from "../../../hooks/hooks";
+import { useCrudOperations } from "../../../hooks/useCrud";
 
 const initialColorValues: Partial<UpdateColor> = {
   name: "",
@@ -12,57 +12,55 @@ const initialColorValues: Partial<UpdateColor> = {
 };
 
 export const AdminColor: React.FC = () => {
-  // const { data: filter, isLoading: filterIsLoading , refe } = useFilter(true);
   const {
     data: colors,
     isLoading: colorsIsLoading,
     refetch: refetchColors,
   } = useColors(true);
+  const { createItem, updateItem, deleteItem } = useCrudOperations<
+    Partial<Color>,
+    UpdateColor
+  >({
+    resourceName: "Знижка",
+    apiEndpoint: "/categories",
+    apiUrlBase: import.meta.env.VITE_API_URL,
+    refetch: refetchColors,
+  });
   const { expandedRows, toggleRow } = useExpandableRows<number>([]);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
 
   const handleUpdateSubmit = useCallback(
     async (brandId: number, data: UpdateColor) => {
       try {
-        const apiUrl = `http://localhost:3000/colors/${brandId}`;
-        const response = await axios.put(apiUrl, data, {});
-        alert(`Колір ${data.name} успішно оновлено!`);
+        await updateItem(brandId, data);
         toggleRow(brandId); // Згорнути рядок
-        if (refetchColors) {
-          refetchColors(); // Оновити таблицю
-        }
       } catch (error) {
         console.error("Помилка оновлення кольору:", error);
         alert("Помилка оновлення кольору");
       }
     },
-    [refetchColors, toggleRow],
+    [updateItem, toggleRow],
   ); // Додано залежності
 
   const handleCreateSubmit = useCallback(
     async (data: UpdateColor) => {
-      // Приймає тип даних форми
-      console.log("Створення нового кольору:", data);
-      // Тут ваш API виклик для СТВОРЕННЯ
       try {
-        const apiUrl = "http://localhost:3000/colors";
-        const response = await axios.post(apiUrl, data, {});
-
-        alert(`Продукт ${data.name} успішно створено!`);
+        await createItem(data);
         setShowCreateForm(false);
-
-        if (refetchColors) {
-          refetchColors(); // Оновити таблицю
-        }
-      } catch (error) {
-        console.error("Помилка створення кольору:", error);
-        alert("Помилка створення кольору");
-      }
+      } catch (error) {}
     },
     [refetchColors, setShowCreateForm],
   ); // Додано залежності
-
-  // --- Визначення колонок таблиці ---
+  const handleDeleteClick = useCallback(
+    async (colorId: number) => {
+      try {
+        await deleteItem(colorId);
+      } catch (error) {
+        console.error("Помилка видалення  кольору:", error);
+      }
+    },
+    [deleteItem],
+  );
   const columns = [
     { header: "ID", key: "id", width: "10%" },
     {
@@ -73,8 +71,7 @@ export const AdminColor: React.FC = () => {
         <div className="flex items-center">
           <div className="text-sm font-medium text-gray-900 truncate">
             {color.name}
-          </div>{" "}
-          {/* Додано truncate */}
+          </div>
         </div>
       ),
     },
@@ -89,8 +86,7 @@ export const AdminColor: React.FC = () => {
             className="text-sm font-medium text-gray-900 truncate"
           >
             {Color.hex_code}
-          </div>{" "}
-          {/* Додано truncate */}
+          </div>
         </div>
       ),
     },
@@ -100,17 +96,16 @@ export const AdminColor: React.FC = () => {
       width: "15%",
       render: (color: Color) => (
         <div className="flex space-x-2">
-          {" "}
-          {/* Обгортка для кнопок */}
           <button
             onClick={() => toggleRow(color.id)}
             className="text-indigo-600 hover:text-indigo-900 text-sm" // Зменшено шрифт
           >
             {expandedRows.includes(color.id) ? "Згорнути" : "Редагувати"}
           </button>
-          <button className="text-red-600 hover:text-red-900 text-sm">
-            {" "}
-            {/* Додайте onClick для видалення */}
+          <button
+            onClick={() => handleDeleteClick(color.id)}
+            className="text-red-600 hover:text-red-900 text-sm"
+          >
             Видалити
           </button>
         </div>
@@ -162,8 +157,6 @@ export const AdminColor: React.FC = () => {
   // --- Рендеринг компонента ---
   return (
     <div className="p-4 mx-auto max-w-7xl">
-      {" "}
-      {/* Обмежено ширину */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Управління продуктами
@@ -184,8 +177,6 @@ export const AdminColor: React.FC = () => {
       {/* --- Форма СТВОРЕННЯ (якщо активна) --- */}
       {showCreateForm && (
         <div className="mb-6 border p-4 rounded-lg bg-white shadow-md">
-          {" "}
-          {/* Змінено стиль обгортки */}
           <GenericForm<UpdateColor>
             key="create-form"
             fields={productFormFields}

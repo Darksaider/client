@@ -7,6 +7,7 @@ import {
   Thumbs,
   EffectFade,
   Scrollbar,
+  Pagination,
 } from "swiper/modules";
 
 import type { Swiper as SwiperCore } from "swiper";
@@ -17,54 +18,24 @@ import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import "swiper/css/effect-fade";
 import "swiper/css/scrollbar";
+import "swiper/css/pagination";
 import { useProductItem } from "../../hooks/useProductItem";
 import { useFavorites } from "../../hooks/useFavorite";
-import apiClient from "../../hooks/apiClient";
-import { useCarts } from "../../hooks/useCart";
 import Comments from "./Comments";
+import { useAuth } from "../../hooks/useLogin";
+import { useProductCart } from "../../hooks/useProductCart";
+import useCountdownTimer from "../../hooks/useData";
 
-// Компонент таймера зворотного відліку
 const CountdownTimer = ({ endDate }: any) => {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const difference = new Date(endDate) - new Date();
-
-      if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-
-        setTimeLeft({ days, hours, minutes, seconds });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, [endDate]);
-
-  const formatNumber = (num: number) => {
-    return num < 10 ? `0${num}` : num;
-  };
-
+  const { timeLeft } = useCountdownTimer({ endDate: endDate });
   return (
-    <div className="flex items-center space-x-2 p-3 bg-red-50 rounded-md border border-red-200">
-      <div className="text-red-600 mr-2">
+    <div className="flex items-center justify-center space-x-1 sm:space-x-2 p-2 sm:p-3 bg-red-50 rounded-md border border-red-200">
+      <div className="text-red-600 mr-1 sm:mr-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
+          width="16"
+          height="16"
+          className="sm:w-5 sm:h-5"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -77,29 +48,29 @@ const CountdownTimer = ({ endDate }: any) => {
         </svg>
       </div>
       <div className="text-center">
-        <span className="font-bold text-red-600">
-          {formatNumber(timeLeft.days)}
+        <span className="font-bold text-red-600 text-sm sm:text-base">
+          {timeLeft.days}
         </span>
         <span className="text-xs text-red-500"> дн</span>
       </div>
-      <span className="text-red-500">:</span>
+      <span className="text-red-500 text-xs sm:text-sm">:</span>
       <div className="text-center">
-        <span className="font-bold text-red-600">
-          {formatNumber(timeLeft.hours)}
+        <span className="font-bold text-red-600 text-sm sm:text-base">
+          {timeLeft.hours}
         </span>
         <span className="text-xs text-red-500"> год</span>
       </div>
-      <span className="text-red-500">:</span>
+      <span className="text-red-500 text-xs sm:text-sm">:</span>
       <div className="text-center">
-        <span className="font-bold text-red-600">
-          {formatNumber(timeLeft.minutes)}
+        <span className="font-bold text-red-600 text-sm sm:text-base">
+          {timeLeft.minutes}
         </span>
         <span className="text-xs text-red-500"> хв</span>
       </div>
-      <span className="text-red-500">:</span>
+      <span className="text-red-500 text-xs sm:text-sm">:</span>
       <div className="text-center">
-        <span className="font-bold text-red-600">
-          {formatNumber(timeLeft.seconds)}
+        <span className="font-bold text-red-600 text-sm sm:text-base">
+          {timeLeft.seconds}
         </span>
         <span className="text-xs text-red-500"> сек</span>
       </div>
@@ -108,15 +79,19 @@ const CountdownTimer = ({ endDate }: any) => {
 };
 
 export const ProductPage = () => {
-  const { id: productId } = useParams<{ id?: string }>();
-  const productIdNumber = productId ? +productId : null;
+  const { id: productIdString } = useParams<{ id?: string }>();
+  if (!productIdString) {
+    return <div>продук</div>;
+  }
+  const productIdNumber = parseInt(productIdString, 10);
 
+  const { isLoggedIn } = useAuth();
   const {
     data: itemData,
     isLoading,
     isError,
     error,
-  } = productIdNumber !== null
+  } = productIdNumber !== undefined
     ? useProductItem(productIdNumber)
     : {
         data: null,
@@ -125,92 +100,41 @@ export const ProductPage = () => {
         error: new Error("Invalid Product ID"),
       };
 
-  const [selectedColor, setSelectedColor] = useState<number | undefined>(
-    undefined,
-  );
-  const [selectedSize, setSelectedSize] = useState<number | undefined>(
-    undefined,
-  );
+  const [selectedColor, setSelectedColor] = useState<number>(1);
+  const [selectedSize, setSelectedSize] = useState<number>(1);
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperCore | null>(null);
 
-  const { data: itemFavorites, refetch } = useFavorites(true);
-  const { data: itemCarts, refetch: refetchCarts } = useCarts(true);
+  const { isInFavorites, toggleFavorite } = useFavorites(
+    isLoggedIn,
+    productIdNumber,
+  );
 
-  const isHasFavorites =
-    itemFavorites?.some((item) => item.product_id === productIdNumber) ?? false;
+  const { toggleCartItem, isInCart } = useProductCart(
+    productIdNumber,
+    selectedColor,
+    selectedSize,
+    isLoggedIn,
+  );
 
-  const isHasCart =
-    itemCarts?.some(
-      (item) =>
-        item.products.id === productIdNumber &&
-        item.color_id === selectedColor &&
-        item.size_id === selectedSize,
-    ) ?? false;
-
-  // Встановлення початкових значень для кольору та розміру після завантаження даних
   useEffect(() => {
-    if (itemData?.data) {
-      if (itemData.data.product_colors?.length > 0) {
-        setSelectedColor(itemData.data.product_colors[0].color_id);
+    if (itemData) {
+      if (itemData.product_colors?.length > 0) {
+        setSelectedColor(itemData.product_colors[0].color_id);
       }
-      if (itemData.data.product_sizes?.length > 0) {
-        setSelectedSize(itemData.data.product_sizes[0].size_id);
+      if (itemData.product_sizes?.length > 0) {
+        setSelectedSize(itemData.product_sizes[0].size_id);
       }
     }
   }, [itemData]);
 
-  const favoriteHandler = async () => {
-    try {
-      if (isHasFavorites) {
-        await apiClient.delete(`/favorites/${productId}`);
-      } else {
-        await apiClient.post("/favorites", { id: productId });
-      }
-      refetch();
-    } catch (error) {
-      console.error("Error managing favorite", error);
-    }
-  };
-
-  const cartHandler = async () => {
-    try {
-      // Знаходимо точний запис, який потрібно видалити
-      const cartItemToDelete = itemCarts?.find(
-        (item) =>
-          item.products.id === productIdNumber &&
-          item.color_id === selectedColor &&
-          item.size_id === selectedSize,
-      );
-
-      if (isHasCart && cartItemToDelete) {
-        // Видаляємо конкретний запис з кошика за його ID
-        await apiClient.delete(`/cart/${cartItemToDelete.id}`);
-      } else {
-        // Додаємо товар з вибраними параметрами
-        await apiClient.post("/cart", {
-          product_id: productId,
-          color_id: selectedColor,
-          size_id: selectedSize,
-        });
-      }
-      refetchCarts();
-    } catch (error) {
-      console.error("Error managing cart", error);
-    }
-  };
-
-  // Отримуємо фото з даних продукту
   const productImages =
-    itemData?.data?.product_photos?.map((photo) => photo.photo_url) || [];
+    itemData?.product_photos?.map((photo) => photo.photo_url) || [];
 
-  // Перевіряємо, чи є знижка
   const hasDiscount =
-    itemData?.data?.product_discounts &&
-    itemData.data.product_discounts.length > 0;
+    itemData?.product_discounts && itemData.product_discounts.length > 0;
 
-  // Отримуємо дату закінчення знижки, якщо вона є
   const discountEndDate = hasDiscount
-    ? itemData.data.product_discounts[0].discounts.end_date
+    ? itemData.product_discounts[0].discounts.end_date
     : null;
 
   if (isLoading) {
@@ -225,14 +149,317 @@ export const ProductPage = () => {
     );
   }
 
-  if (!itemData?.data) {
+  if (!itemData) {
     return <p className="p-4 text-center">Товар не знайдено</p>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* Основний контейнер із сіткою */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+      <title>{itemData.name}</title>
+
+      {/* Мобільна версія - одна колонка */}
+      <div className="block lg:hidden">
+        {/* Галерея зображень для мобільних */}
+        <div className="mb-4">
+          <Swiper
+            spaceBetween={10}
+            pagination={{ clickable: true }}
+            modules={[Pagination]}
+            className="h-80 sm:h-96 rounded-lg"
+          >
+            {productImages.length > 0 ? (
+              productImages.map((imgUrl, index) => (
+                <SwiperSlide
+                  key={`mobile-${index}`}
+                  className="flex justify-center items-center bg-gray-100 rounded-lg"
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`Зображення ${index + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </SwiperSlide>
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
+                <p>Зображення відсутнє</p>
+              </div>
+            )}
+          </Swiper>
+        </div>
+
+        {/* Інформація про товар для мобільних */}
+        <div className="space-y-4">
+          <div className="border-b pb-3">
+            <h1 className="text-xl sm:text-2xl font-bold mb-2">
+              {itemData.name}
+            </h1>
+
+            <div className="flex flex-col gap-2 mb-3">
+              {itemData.product_brands &&
+                itemData.product_brands.length > 0 && (
+                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs sm:text-sm inline-block w-fit">
+                    Бренд: {itemData.product_brands[0].brands.name}
+                  </span>
+                )}
+
+              {itemData.product_categories &&
+                itemData.product_categories.length > 0 && (
+                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs sm:text-sm inline-block w-fit">
+                    Категорія:{" "}
+                    {itemData.product_categories
+                      .map((cat) => cat.categories.name)
+                      .join(", ")}
+                  </span>
+                )}
+            </div>
+
+            <p className="text-gray-700 text-sm sm:text-base">
+              {itemData.description}
+            </p>
+          </div>
+
+          {/* Ціна та знижка */}
+          <div className="space-y-3 border-b pb-4">
+            {hasDiscount ? (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">
+                    {itemData.discounted_price} грн
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-base sm:text-lg line-through text-gray-500">
+                      {itemData.price} грн
+                    </p>
+                    <span className="px-2 py-1 bg-red-100 text-red-700 text-xs sm:text-sm font-medium rounded">
+                      -{itemData.discount_percentage}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    До кінця знижки:
+                  </p>
+                  <CountdownTimer endDate={discountEndDate} />
+                </div>
+              </>
+            ) : (
+              <p className="text-xl sm:text-2xl font-bold">
+                {itemData.price} грн
+              </p>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-gray-700">В наявності:</span>
+                <span
+                  className={`${itemData.stock > 5 ? "text-green-600" : itemData.stock > 0 ? "text-orange-500" : "text-red-600"} font-medium`}
+                >
+                  {itemData.stock > 0 ? itemData.stock : "Немає в наявності"}
+                </span>
+              </div>
+
+              {itemData.sales_count > 0 && (
+                <span className="text-gray-500">
+                  Продано: {itemData.sales_count}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Доставка та оплата */}
+          <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 space-y-2 sm:space-y-3">
+            <h3 className="font-medium text-gray-800 text-sm sm:text-base">
+              Доставка та оплата:
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <div className="text-green-600 mt-0.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m9 12 2 2 4-4"></path>
+                  </svg>
+                </div>
+                <p className="text-xs sm:text-sm">
+                  Безкоштовна доставка при замовленні від 2000 грн
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="text-blue-600 mt-0.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                  </svg>
+                </div>
+                <p className="text-xs sm:text-sm">
+                  Доставка протягом 2-3 робочих днів
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="text-orange-600 mt-0.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                  </svg>
+                </div>
+                <p className="text-xs sm:text-sm">
+                  Повернення протягом 14 днів
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Вибір кольору */}
+          {itemData.product_colors && itemData.product_colors.length > 0 && (
+            <div className="border-t pt-4">
+              <h3 className="text-base sm:text-lg font-medium mb-3">Колір:</h3>
+              <div className="flex flex-wrap gap-3">
+                {itemData.product_colors.map((option) => (
+                  <label
+                    key={option.color_id}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="productColor"
+                      value={option.color_id}
+                      className="sr-only peer"
+                      checked={selectedColor === option.color_id}
+                      onChange={() => setSelectedColor(option.color_id)}
+                    />
+                    <span
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border cursor-pointer transition-all duration-200 ease-in-out
+                        peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-blue-500
+                        hover:ring-1 hover:ring-gray-400
+                        ${selectedColor === option.color_id ? "ring-2 ring-offset-1 ring-blue-500" : "border-gray-300"}`}
+                      style={{ backgroundColor: option.colors.hex_code }}
+                      title={option.colors.name}
+                    ></span>
+                    <span className="ml-2 text-xs sm:text-sm text-gray-700">
+                      {option.colors.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Вибір розміру */}
+          {itemData.product_sizes && itemData.product_sizes.length > 0 && (
+            <div>
+              <h3 className="text-base sm:text-lg font-medium mb-3">Розмір:</h3>
+              <div className="flex flex-wrap gap-2">
+                {itemData.product_sizes.map((option) => (
+                  <label key={option.size_id} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="productSize"
+                      className="sr-only"
+                      checked={selectedSize === option.size_id}
+                      onChange={() => setSelectedSize(option.size_id)}
+                    />
+                    <span
+                      className={`inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 border rounded-md text-sm ${
+                        selectedSize === option.size_id
+                          ? "bg-blue-100 border-blue-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {option.sizes.size}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Теги */}
+          {itemData.product_tags && itemData.product_tags.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-sm text-gray-700 font-medium">Теги:</span>
+              <div className="flex flex-wrap gap-2">
+                {itemData.product_tags.map((tag) => (
+                  <span
+                    key={tag.tag_id}
+                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                  >
+                    {tag.tags.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Кнопки дій */}
+          <div className="sticky bottom-0 bg-white p-3 border-t -mx-2 sm:-mx-4">
+            <div className="flex gap-2 sm:gap-3">
+              <button
+                onClick={toggleCartItem}
+                disabled={itemData.stock <= 0}
+                className={`flex-1 px-3 py-3 sm:px-4 rounded-md transition-colors text-center font-medium text-sm sm:text-base ${
+                  itemData.stock <= 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : isInCart
+                      ? "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                }`}
+              >
+                {itemData.stock <= 0
+                  ? "Немає в наявності"
+                  : isInCart
+                    ? "Видалити з кошика"
+                    : "До кошика"}
+              </button>
+
+              <button
+                onClick={toggleFavorite}
+                className={`px-3 py-3 sm:px-4 rounded-md transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  isInFavorites
+                    ? "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                {isInFavorites ? "♥" : "♡"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Десктопна версія - дві колонки */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-8">
         <div className="flex flex-col md:flex-row gap-4 md:h-[540px]">
           <div className="order-2 md:order-1 md:w-1/5">
             <Swiper
@@ -272,7 +499,6 @@ export const ProductPage = () => {
             </Swiper>
           </div>
 
-          {/* Основне зображення */}
           <div className="order-1 md:order-2 md:w-4/5">
             <Swiper
               spaceBetween={10}
@@ -310,52 +536,49 @@ export const ProductPage = () => {
           </div>
         </div>
 
-        {/* Права колонка з інформацією про товар */}
         <div className="space-y-6">
           <div className="border-b pb-4">
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              {itemData.data.name}
+              {itemData.name}
             </h1>
 
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              {itemData.data.product_brands &&
-                itemData.data.product_brands.length > 0 && (
+              {itemData.product_brands &&
+                itemData.product_brands.length > 0 && (
                   <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
-                    Бренд: {itemData.data.product_brands[0].brands.name}
+                    Бренд: {itemData.product_brands[0].brands.name}
                   </span>
                 )}
 
-              {itemData.data.product_categories &&
-                itemData.data.product_categories.length > 0 && (
+              {itemData.product_categories &&
+                itemData.product_categories.length > 0 && (
                   <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
                     Категорія:{" "}
-                    {itemData.data.product_categories
+                    {itemData.product_categories
                       .map((cat) => cat.categories.name)
                       .join(", ")}
                   </span>
                 )}
             </div>
 
-            <p className="text-gray-700">{itemData.data.description}</p>
+            <p className="text-gray-700">{itemData.description}</p>
           </div>
 
-          {/* Ціна з урахуванням знижки */}
           <div className="space-y-3 border-b pb-4">
             {hasDiscount ? (
               <>
                 <div className="flex items-center">
                   <p className="text-2xl font-bold text-red-600 mr-3">
-                    {itemData.data.discounted_price} грн
+                    {itemData.discounted_price} грн
                   </p>
                   <p className="text-lg line-through text-gray-500">
-                    {itemData.data.price} грн
+                    {itemData.price} грн
                   </p>
                   <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 text-sm font-medium rounded">
-                    -{itemData.data.discount_percentage}%
+                    -{itemData.discount_percentage}%
                   </span>
                 </div>
 
-                {/* Таймер зворотного відліку */}
                 <div className="mb-3">
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     До кінця знижки:
@@ -364,23 +587,20 @@ export const ProductPage = () => {
                 </div>
               </>
             ) : (
-              <p className="text-2xl font-bold">{itemData.data.price} грн</p>
+              <p className="text-2xl font-bold">{itemData.price} грн</p>
             )}
 
-            {/* Кількість товарів */}
             <div className="flex items-center space-x-2 text-sm">
               <span className="font-medium text-gray-700">В наявності:</span>
               <span
-                className={`${itemData.data.stock > 5 ? "text-green-600" : itemData.data.stock > 0 ? "text-orange-500" : "text-red-600"} font-medium`}
+                className={`${itemData.stock > 5 ? "text-green-600" : itemData.stock > 0 ? "text-orange-500" : "text-red-600"} font-medium`}
               >
-                {itemData.data.stock > 0
-                  ? itemData.data.stock
-                  : "Немає в наявності"}
+                {itemData.stock > 0 ? itemData.stock : "Немає в наявності"}
               </span>
 
-              {itemData.data.sales_count > 0 && (
+              {itemData.sales_count > 0 && (
                 <span className="text-gray-500 ml-2">
-                  Продано: {itemData.data.sales_count}
+                  Продано: {itemData.sales_count}
                 </span>
               )}
             </div>
@@ -454,7 +674,7 @@ export const ProductPage = () => {
           <div className="border-t pt-4">
             <h3 className="text-lg font-medium mb-2">Колір:</h3>
             <div className="flex flex-wrap gap-2">
-              {itemData.data.product_colors?.map((option) => (
+              {itemData.product_colors?.map((option) => (
                 <label
                   key={option.color_id}
                   className="flex items-center cursor-pointer mr-3 mb-2"
@@ -487,7 +707,7 @@ export const ProductPage = () => {
           <div>
             <h3 className="text-lg font-medium mb-2">Розмір:</h3>
             <div className="flex flex-wrap gap-2">
-              {itemData.data.product_sizes?.map((option) => (
+              {itemData.product_sizes?.map((option) => (
                 <label key={option.size_id} className="cursor-pointer">
                   <input
                     type="radio"
@@ -510,56 +730,53 @@ export const ProductPage = () => {
             </div>
           </div>
 
-          {/* Теги */}
-          {itemData.data.product_tags &&
-            itemData.data.product_tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className="text-sm text-gray-700 mr-2">Теги:</span>
-                {itemData.data.product_tags.map((tag) => (
-                  <span
-                    key={tag.tag_id}
-                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                  >
-                    {tag.tags.name}
-                  </span>
-                ))}
-              </div>
-            )}
+          {itemData.product_tags && itemData.product_tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="text-sm text-gray-700 mr-2">Теги:</span>
+              {itemData.product_tags.map((tag) => (
+                <span
+                  key={tag.tag_id}
+                  className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                >
+                  {tag.tags.name}
+                </span>
+              ))}
+            </div>
+          )}
 
-          {/* Кнопки дій */}
           <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t">
             <button
-              onClick={cartHandler}
-              disabled={itemData.data.stock <= 0}
+              onClick={toggleCartItem}
+              disabled={itemData.stock <= 0}
               className={`flex-1 px-4 py-3 rounded-md transition-colors text-center font-medium ${
-                itemData.data.stock <= 0
+                itemData.stock <= 0
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : isHasCart
+                  : isInCart
                     ? "bg-gray-200 hover:bg-gray-300 text-gray-800"
                     : "bg-green-500 hover:bg-green-600 text-white"
               }`}
             >
-              {itemData.data.stock <= 0
+              {itemData.stock <= 0
                 ? "Немає в наявності"
-                : isHasCart
+                : isInCart
                   ? "Видалити з кошика"
-                  : "Додати до кошика"}
+                  : "Перейти до кошика"}
             </button>
 
             <button
-              onClick={favoriteHandler}
+              onClick={toggleFavorite}
               className={`px-4 py-3 rounded-md transition-colors ${
-                isHasFavorites
+                isInFavorites
                   ? "bg-gray-200 hover:bg-gray-300 text-gray-800"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
               }`}
             >
-              {isHasFavorites ? "Видалити з улюблених" : "Додати до улюблених"}
+              {isInFavorites ? "Видалити з улюблених" : "Додати до улюблених"}
             </button>
           </div>
         </div>
       </div>
-      <Comments productId={productId} />
+      <Comments productId={productIdNumber} />
     </div>
   );
 };

@@ -64,7 +64,6 @@ export function useAuth(): AuthState {
           role: string;
           email: string;
         }>("/me"); // Або /api/auth/status
-        console.log(response);
 
         // Якщо запит успішний (токен валідний)
         const serverUserData = response.data;

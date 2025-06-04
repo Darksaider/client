@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { ProductItem } from "../types/product.type";
+import { Product, ProductItem } from "../types/product.type";
+import apiClient from "./apiClient";
 
-const fetchProduct = async (id: number): Promise<ProductItem> => {
+const fetchProduct = async (id: number): Promise<Product> => {
   const env = import.meta.env.VITE_API_URL;
   const url = `${env}/product/${id}`;
 
   try {
-    const response = await axios.get<ProductItem>(url);
-    return response.data;
+    const response = await apiClient.get<ProductItem>(url);
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching product with ID:", id, error); // Додали більше інформації про помилку
     throw error;

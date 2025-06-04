@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
-import { useDiscounts } from "./hooks";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
+import { useDiscounts } from "../../../hooks/hooks";
 import { useCrudOperations } from "../../../hooks/useCrud";
 import { formatDateForInput } from "../../../hooks/fn";
 import { CreateDiscount, Discount, UpdateDiscount } from "../admin.type";

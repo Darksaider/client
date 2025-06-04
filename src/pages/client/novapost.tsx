@@ -17,7 +17,7 @@ type Warehouse = {
 };
 
 // API response types
-type ApiResponse<T> = {
+export type ApiResponse<T> = {
   success: boolean;
   data: T[];
   errors?: string[];

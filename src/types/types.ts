@@ -1,3 +1,5 @@
+import { Color, Size } from "../pages/admin/admin.type";
+
 export interface IFormSingInInput {
   email: string;
   password: string;
@@ -59,38 +61,37 @@ export interface IFilterResponse<T> {
   message: string;
   data: T;
 }
-// Тип для одного фото продукту на клієнті
-interface ClientCartProductPhoto {
-  photo_url: string;
-  // position?: number | null; // Зазвичай позиція не потрібна для відображення в кошику
-}
-
-// Тип для даних продукту в кошику на клієнті
-interface ClientCartProductData {
-  id: number;
-  name: string;
-  description: string | null;
-  price: string; // Prisma Decimal часто серіалізується як рядок для збереження точності
-  stock: number | null;
-  product_photos: ClientCartProductPhoto[]; // Масив з 0 або 1 фото
-  // Якщо ви додавали бренд в запит:
-  // product_brands: { brands: { name: string } }[];
+export interface Comment {
+  id?: number | string;
+  product_id: number | string;
+  text: string;
+  rating: number;
+  created_at?: string;
+  updated_at?: string;
+  user_id?: number | string;
 }
 
 // Тип для одного елемента кошика на клієнті
 export interface ClientCartItem {
-  id: number; // ID самого запису в кошику (cart.id)
+  cartId: number | string; // ID самого запису в кошику (cart.id)
   quantity: number | null;
+  product_id: number;
   added_at: string | null;
-  color_id: number | null; // ID кольору продукту
-  size_id: number | null; // ID розміру продукту
-
+  name: string;
+  description: string;
+  price: string;
+  stock: 90;
+  photo_url: string;
+  color: Color;
+  size: Size;
+  discounted_price?: string | number;
+  discount_percentage?: number;
   // Date зазвичай серіалізується як ISO рядок
   // Важливо: поле називається 'products', хоча містить дані ОДНОГО продукту,
   // бо саме так воно визначено у вашому select/include Prisma запиті
-  products: ClientCartProductData;
-  discount_percentage?: number; // Знижка на продукт, якщо є
-  discounted_price?: number; // Знижка на продукт, якщо є
+  // products: ClientCartProductData;
+  // discount_percentage?: number; // Знижка на продукт, якщо є
+  // discounted_price?: number; // Знижка на продукт, якщо є
 }
 
 // --- Тип для пропсу компонента ---

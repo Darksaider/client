@@ -4,7 +4,7 @@ import { useProducts } from "../../../hooks/useProduct";
 import { ProductNew, UpdateProductNew } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
 import { useCrudOperations } from "../../../hooks/useCrud";
 import { PaginationButtons } from "../../../components/Pagination";
 

@@ -2,8 +2,8 @@ import React, { useState, useCallback } from "react"; // Додано useState, 
 import { Brand, CreateBrand, UpdateBrand } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
-import { useBrands } from "./hooks";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
+import { useBrands } from "../../../hooks/hooks";
 import { useCrudOperations } from "../../../hooks/useCrud";
 
 const initialBrandValues: Partial<UpdateBrand> = {

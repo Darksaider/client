@@ -1,3 +1,4 @@
+// ProductItem.tsx
 import { NavLink } from "react-router";
 import { Product } from "../types/product.type";
 import React from "react";
@@ -11,7 +12,6 @@ export const ProductItem: React.FC<ProductItemProps> = ({
   className,
   product,
 }) => {
-  // Форматування ціни
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat("uk-UA", {
       style: "currency",
@@ -37,54 +37,60 @@ export const ProductItem: React.FC<ProductItemProps> = ({
 
   return (
     <NavLink
-      className={`group flex flex-col w-full max-w-xs bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 ${className || ""}`}
+      className={`group flex flex-col w-full bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 ${className || ""}`}
       to={`/products/${product.id}`}
     >
-      <div className="relative w-full" style={{ paddingTop: "100%" }}>
+      {/* Image Container - Responsive Aspect Ratio */}
+      <div className="relative w-full aspect-square">
         <img
           src={productImage}
           alt={product.name}
           className="absolute inset-0 w-full h-full object-cover bg-gray-100"
+          loading="lazy"
         />
 
         {hasDiscount && (
-          <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-sm font-bold">
-            {discountPercentage}%
+          <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs sm:text-sm font-bold">
+            -{discountPercentage}%
           </div>
         )}
       </div>
 
-      <div className="p-4 flex flex-col gap-2">
-        <span className="text-sm text-gray-600 font-medium">
-          {/* {product.brands[0].name} */}
+      {/* Content */}
+      <div className="p-3 sm:p-4 flex flex-col gap-2 flex-grow">
+        {/* Brand */}
+        <span className="text-xs sm:text-sm text-gray-600 font-medium line-clamp-1">
+          {product.product_brands[0]?.brands?.name || "Без бренду"}
         </span>
 
-        <h3 className="text-base font-semibold overflow-hidden line-clamp-2 h-12 m-0">
+        {/* Product Name */}
+        <h3 className="text-sm sm:text-base font-semibold line-clamp-2 flex-grow">
           {product.name}
         </h3>
 
-        <div className="flex justify-between items-center mt-2">
+        {/* Price and Sales */}
+        <div className="flex justify-between items-end mt-auto">
           <div className="flex flex-col">
             {hasDiscount ? (
               <>
-                <span className="text-lg font-bold text-red-600">
+                <span className="text-base sm:text-lg font-bold text-red-600">
                   {formatPrice(product.discounted_price as string)}
                 </span>
-                <span className="text-sm text-gray-500 line-through">
+                <span className="text-xs sm:text-sm text-gray-500 line-through">
                   {formatPrice(product.price)}
                 </span>
               </>
             ) : (
-              <span className="text-lg font-bold">
+              <span className="text-base sm:text-lg font-bold">
                 {formatPrice(product.price)}
               </span>
             )}
           </div>
 
-          {/* Показник популярності */}
           {product.sales_count > 0 && (
-            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-              Продано: {product.sales_count}
+            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded whitespace-nowrap">
+              <span className="hidden sm:inline">Продано: </span>
+              {product.sales_count}
             </span>
           )}
         </div>

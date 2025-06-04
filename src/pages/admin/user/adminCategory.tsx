@@ -2,8 +2,8 @@ import React, { useState, useCallback } from "react";
 import { Category, UpdateCategory } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
-import { useCategories } from "./hooks";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
+import { useCategories } from "../../../hooks/hooks";
 import { useCrudOperations } from "../../../hooks/useCrud";
 
 const initialBrandValues: Partial<UpdateCategory> = {

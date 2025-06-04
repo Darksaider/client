@@ -101,6 +101,7 @@ export interface Product {
     discount_id: number;
     discounts: Discount;
   }[];
+  discount_percentage?: string;
 }
 
 export interface ApiResponse {

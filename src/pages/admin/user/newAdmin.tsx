@@ -4,12 +4,11 @@ import { useProducts } from "../../../hooks/useProduct"; // Переконайт
 import { ProductNew, UpdateProductNew } from "../admin.type";
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
-import { useExpandableRows } from "./useExpandableRows";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
 import { useCrudOperations } from "../../../hooks/useCrud";
 import { PaginationButtons } from "../../../components/Pagination";
 
 const initialProductValues: Partial<UpdateProductNew> = {
-  // Partial робить всі поля необов'язковими
   name: "",
   description: "",
   price: "0.00",

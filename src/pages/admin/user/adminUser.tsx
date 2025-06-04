@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from "react"; // Додано useState, useCallback
-import { useUsers } from "../useUsers"; // Переконайтесь, що useUsers повертає refetch
+import { useUsers } from "../../../hooks/useUsers"; // Переконайтесь, що useUsers повертає refetch
 import { User, UpdateUser } from "../admin.type"; // Припустимо, UpdateUser підходить для форми
 import { FormField, GenericForm } from "./GenericForm";
 import { GenericTable } from "./GenericTable";
 import { StatusBadge } from "./StatusBadge";
-import { useExpandableRows } from "./useExpandableRows";
+import { useExpandableRows } from "../../../hooks/useExpandableRows";
 import axios from "axios";
 
 const initialUserValues: Partial<UpdateUser> = {
@@ -30,29 +30,39 @@ export const AdminUser: React.FC = () => {
   // --- Обробники Submit ---
   const handleUpdateSubmit = useCallback(
     async (userId: number, data: UpdateUser) => {
-      console.log(data);
-
-      console.log(`Оновлення користувача з ID ${userId}:`, data);
-      // Тут ваш API виклик для ОНОВЛЕННЯ
       try {
-        axios.put(`http://localhost:3000/users/${userId}`, data);
-        alert(`Користувача ${data.first_name} успішно оновлено!`);
-        toggleRow(userId); // Згорнути рядок
-        if (refetchUsers) {
-          refetchUsers(); // Оновити таблицю
+        const formData = new FormData();
+
+        formData.append("first_name", data.first_name);
+        formData.append("last_name", data.last_name);
+        formData.append("email", data.email);
+        formData.append("phone_number", data.phone_number);
+        formData.append("role", data.role);
+
+        if (data.avatar_url[0] instanceof File) {
+          formData.append("avatar_url", data.avatar_url[0]);
         }
+        console.log(data.avatar_url[0]);
+
+        await axios.put(`http://localhost:3000/users/${userId}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        alert(`Користувача ${data.first_name} успішно оновлено!`);
+        toggleRow(userId);
+        refetchUsers();
       } catch (error) {
         console.error("Помилка оновлення користувача:", error);
         alert("Помилка оновлення користувача");
       }
     },
     [refetchUsers, toggleRow],
-  ); // Додано залежності
+  );
 
   const handleCreateSubmit = useCallback(
     async (data: UpdateUser) => {
-      // Приймає тип даних форми
-      console.log("Створення нового користувача:", data);
       try {
         axios.post("http://localhost:3000/users/", data);
         alert(`Користувача ${data.first_name} успішно створено!`);
@@ -100,7 +110,6 @@ export const AdminUser: React.FC = () => {
             </div>
           )}
           <div className="text-sm font-medium text-gray-900 truncate">{`${user.first_name || ""} ${user.last_name || ""}`}</div>{" "}
-          {/* Додано прізвище, truncate, обробку null */}
         </div>
       ),
     },
@@ -210,23 +219,20 @@ export const AdminUser: React.FC = () => {
       label: "Пароль",
       type: "password",
       validation: { required: "Пароль обов'язковий при створенні" },
-
-      // Потрібна умовна валідація
     },
-    // {
-    //   name: "avatar_url",
-    //   label: "Аватар користувача",
-    //   type: "file",
-    //   multiple: true,
-    //   accept: "image/*",
-    // },
+    {
+      name: "avatar_url",
+      label: "Аватар користувача",
+      type: "file",
+      multiple: false,
+      accept: "image/*",
+    },
   ];
 
   const renderUserUpdateForm = useCallback(
     (user: User) => (
       <GenericForm<UpdateUser>
         key={`update-form-${user.id}`} // Ключ для переініціалізації
-        // Передаємо дані користувача, приводимо до типу форми UpdateUser
         // Припускаємо, що UpdateUser є підмножиною User або GenericForm ігнорує зайві поля
         defaultValues={user as UpdateUser}
         fields={userFormFields}
@@ -242,8 +248,6 @@ export const AdminUser: React.FC = () => {
   // --- Рендеринг компонента ---
   return (
     <div className="p-4 mx-auto max-w-7xl">
-      {" "}
-      {/* Обмежено ширину */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Управління користувачами

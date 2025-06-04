@@ -1,8 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect } from "react";
-import { IFilterResponse } from "../../../types/types";
-import { Brand, Category, Color, Discount, Size } from "../admin.type";
+import { IFilterResponse } from "../types/types";
+import {
+  Brand,
+  Category,
+  Color,
+  Discount,
+  Size,
+} from "../pages/admin/admin.type";
 const apiUrlBase = import.meta.env.VITE_API_URL;
 interface Review {
   id: number;
