@@ -1,24 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { IFilterResponse } from "../types/types";
-import { Favorite } from "../pages/admin/admin.type";
 import apiClient from "./apiClient";
+import { Favorite } from "../types/product.type";
 
 const getDataFavorites = async () => {
   const response =
     await apiClient.get<IFilterResponse<Favorite[]>>("/favorites");
   return response.data.data;
 };
-export function useFavorites(isEnabled: boolean, productId: number) {
+export function useFavorites(isEnabled: boolean, productId?: number) {
   const { data, isError, isLoading, isSuccess, refetch } = useQuery({
     queryKey: ["favorites"],
     queryFn: () => getDataFavorites(),
     select: (data) => data,
     enabled: isEnabled,
   });
-  // useEffect(() => {
-  //   if (isSuccess) console.log("Data fetched successfully");
-  // }, [isSuccess, data]);
 
   useEffect(() => {
     if (isError) console.log("Error fetching data");

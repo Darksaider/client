@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useProductFilters } from "../hooks/useFilterParams";
-import { useFilter } from "../hooks/useFilter";
+import { IFilter } from "../types/types";
 
-export const Filter: React.FC = () => {
+interface IFilterProps {
+  data: IFilter;
+}
+
+export const Filter = ({ data }: IFilterProps) => {
   const { filters, updateFilters, resetFilters } = useProductFilters();
-  const { data, isLoading } = useFilter(true);
   const [priceRange, setPriceRange] = useState({
     min: filters.minPrice || "",
     max: filters.maxPrice || "",
@@ -61,8 +64,6 @@ export const Filter: React.FC = () => {
     });
   };
 
-  if (isLoading) return <div className="p-4">Завантаження фільтрації...</div>;
-
   const renderFilterSection = (
     title: string,
     type: "categories" | "brands" | "tags",
@@ -70,7 +71,7 @@ export const Filter: React.FC = () => {
   ) => (
     <div className="mb-6">
       <h3 className="font-medium mb-3 text-gray-800">{title}</h3>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">
         {options?.map((option) => (
           <label
             key={option.id}
@@ -78,13 +79,13 @@ export const Filter: React.FC = () => {
           >
             <input
               type="checkbox"
-              className="mr-3 w-4 h-4"
+              className="mr-3 w-4 h-4 flex-shrink-0"
               checked={filters[type]?.includes(option.id) || false}
               onChange={(e) =>
                 handleCheckboxChange(type, option.id, e.target.checked)
               }
             />
-            <span className="text-sm">{option.name}</span>
+            <span className="text-sm truncate">{option.name}</span>
           </label>
         ))}
       </div>
@@ -175,11 +176,11 @@ export const Filter: React.FC = () => {
         {/* Кольори */}
         <div className="mb-6">
           <h3 className="font-medium mb-3 text-gray-800">Кольори</h3>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {data?.colors?.map((option) => (
               <label
                 key={option.id}
-                className="flex items-center cursor-pointer"
+                className="flex items-center justify-center cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -205,7 +206,7 @@ export const Filter: React.FC = () => {
         {/* Розміри */}
         <div className="mb-6">
           <h3 className="font-medium mb-3 text-gray-800">Розміри</h3>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {data?.sizes?.map((option) => (
               <label key={option.id} className="cursor-pointer">
                 <input
@@ -217,13 +218,15 @@ export const Filter: React.FC = () => {
                   }
                 />
                 <span
-                  className={`inline-flex items-center justify-center w-12 h-12 border-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center justify-center w-full h-12 border-2 rounded-lg transition-all duration-200 text-center ${
                     filters.sizes?.includes(option.id)
                       ? "bg-blue-100 border-blue-500 text-blue-700"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
                 >
-                  {option.size}
+                  <span className="text-sm font-medium truncate px-1">
+                    {option.size}
+                  </span>
                 </span>
               </label>
             ))}
@@ -372,20 +375,99 @@ export const Filter: React.FC = () => {
             </form>
           </div>
 
-          {/* Категорії, Бренди, Теги */}
-          {data?.categories &&
-            renderFilterSection("Категорії", "categories", data.categories)}
-          {data?.brands && renderFilterSection("Бренди", "brands", data.brands)}
-          {data?.tags && renderFilterSection("Теги", "tags", data.tags)}
+          {/* Категорії, Бренди, Теги з адаптивними колонками */}
+          {data?.categories && (
+            <div className="mb-6">
+              <h3 className="font-medium mb-3 text-gray-800">Категорії</h3>
+              <div className="grid grid-cols-1 gap-2">
+                {data.categories.map((option) => (
+                  <label
+                    key={option.id}
+                    className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 w-4 h-4 flex-shrink-0"
+                      checked={filters.categories?.includes(option.id) || false}
+                      onChange={(e) =>
+                        handleCheckboxChange(
+                          "categories",
+                          option.id,
+                          e.target.checked,
+                        )
+                      }
+                    />
+                    <span className="text-sm">{option.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data?.brands && (
+            <div className="mb-6">
+              <h3 className="font-medium mb-3 text-gray-800">Бренди</h3>
+              <div className="grid grid-cols-1 gap-2">
+                {data.brands.map((option) => (
+                  <label
+                    key={option.id}
+                    className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 w-4 h-4 flex-shrink-0"
+                      checked={filters.brands?.includes(option.id) || false}
+                      onChange={(e) =>
+                        handleCheckboxChange(
+                          "brands",
+                          option.id,
+                          e.target.checked,
+                        )
+                      }
+                    />
+                    <span className="text-sm">{option.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data?.tags && (
+            <div className="mb-6">
+              <h3 className="font-medium mb-3 text-gray-800">Теги</h3>
+              <div className="grid grid-cols-1 gap-2">
+                {data.tags.map((option) => (
+                  <label
+                    key={option.id}
+                    className="flex items-center cursor-pointer hover:bg-gray-50 p-1 rounded"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 w-4 h-4 flex-shrink-0"
+                      checked={filters.tags?.includes(option.id) || false}
+                      onChange={(e) =>
+                        handleCheckboxChange(
+                          "tags",
+                          option.id,
+                          e.target.checked,
+                        )
+                      }
+                    />
+                    <span className="text-sm">{option.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Кольори */}
           <div className="mb-6">
             <h3 className="font-medium mb-3 text-gray-800">Кольори</h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-6 gap-3">
               {data?.colors?.map((option) => (
                 <label
                   key={option.id}
-                  className="flex items-center cursor-pointer"
+                  className="flex items-center justify-center cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -415,7 +497,7 @@ export const Filter: React.FC = () => {
           {/* Розміри */}
           <div className="mb-6">
             <h3 className="font-medium mb-3 text-gray-800">Розміри</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {data?.sizes?.map((option) => (
                 <label key={option.id} className="cursor-pointer">
                   <input
@@ -427,13 +509,15 @@ export const Filter: React.FC = () => {
                     }
                   />
                   <span
-                    className={`inline-flex items-center justify-center w-12 h-12 border-2 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center justify-center w-full h-12 border-2 rounded-lg transition-all duration-200 text-center ${
                       filters.sizes?.includes(option.id)
                         ? "bg-blue-100 border-blue-500 text-blue-700"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
                   >
-                    {option.size}
+                    <span className="text-sm font-medium truncate px-1">
+                      {option.size}
+                    </span>
                   </span>
                 </label>
               ))}

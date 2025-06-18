@@ -2,20 +2,17 @@ import { Route, Routes } from "react-router"; // Виправлено імпор
 import { HomePage } from "./pages/client/HomePage";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RegisterPage } from "./pages/client/RegisterPage";
-import { ProductPage } from "./pages/client/ProductPage";
 import { ProductsPage } from "./pages/client/ProductsPage";
 import { SingInPage } from "./pages/client/SignIn";
-import { AdminUser } from "./pages/admin/user/adminUser";
-import { AdminProducts } from "./pages/admin/user/adminProducts";
-import { AdminBrands } from "./pages/admin/user/adminBrands";
-import { AdminColor } from "./pages/admin/user/adminColors";
-import { AdminSizes } from "./pages/admin/user/adminSizes";
-import { AdminTags } from "./pages/admin/user/adminTags";
-import { AdminCategories } from "./pages/admin/user/adminCategory";
-import { AdminDiscounts } from "./pages/admin/user/adminDiscounts";
-import { AdminLayout, Layout } from "./components/Layaout";
-import { ImageUploadForm } from "./pages/admin/user/image";
-import { OldAdminProducts } from "./pages/admin/user/newAdmin";
+import { AdminUser } from "./pages/admin/adminUser";
+import { AdminProducts } from "./pages/admin/adminProducts";
+import { AdminBrands } from "./pages/admin/adminBrands";
+import { AdminColor } from "./pages/admin/adminColors";
+import { AdminSizes } from "./pages/admin/adminSizes";
+import { AdminTags } from "./pages/admin/adminTags";
+import { AdminCategories } from "./pages/admin/adminCategory";
+import { AdminDiscounts } from "./pages/admin/adminDiscounts";
+import { AdminLayout, Layout } from "./components/Layouts";
 
 // --- Компоненти оплати ---
 // Переконайтесь, що шляхи до цих компонентів правильні
@@ -27,9 +24,15 @@ import PaymentCanceledPage from "./components/paytment/PaymentCanceledPage";
 import { AboutPage } from "./pages/client/AboutPage";
 import { UserProfile } from "./pages/client/ProfilePage";
 import { Toaster } from "react-hot-toast";
+import { AdminOrders } from "./pages/admin/adminOrders";
+import { OrdersPage } from "./components/UserOrders";
+import { AdminComments } from "./pages/admin/adminComments";
+import FAQPage from "./pages/client/FaqPage";
+import { PrivacyPolicy } from "./pages/client/PrivacyPage";
+import NotFound from "./pages/client/NotFoundPage";
 import { ProfileLayout } from "./components/ProfileLayout";
-import { AdminOrders, OrderUpdateForm } from "./pages/admin/user/adminOrders";
-import { OrdersPage } from "./components/order";
+import { ProductPage } from "./pages/client/ProductPage";
+import { FavoritePage } from "./pages/client/FavoritePage";
 // Додамо імпорти для нових сторінок (потрібно їх створити)
 
 export const App: React.FC = () => {
@@ -64,40 +67,32 @@ export const App: React.FC = () => {
       />
 
       <Routes>
+        <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="singIn" element={<SingInPage />} />
           <Route path="products" element={<ProductsPage />} />
+          <Route path="favorite" element={<FavoritePage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="faq" element={<FAQPage />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
+          {/* <Route path="products/:id" element={<ProductPage />} /> */}
           <Route path="products/:id" element={<ProductPage />} />
           <Route path="me" element={<ProfileLayout />}>
-            <Route path="profile" element={<UserProfile />} />
+            <Route path="profile" element={<UserProfile />} />a
             <Route path="orders" element={<OrdersPage />} />
           </Route>
 
-          {/* <Route path="cart" element={<CartPage />} /> */}
-          {/* Додано маршрут кошика */}
-          {/* --- Маршрути Оформлення та Оплати Замовлення --- */}
-          {/* Крок 1: Сторінка форми оформлення (введення адреси і т.д.) */}
-          {/* Видалено дублікат cartForm */}
           <Route path="/checkout" element={<CheckoutPage />} />
-          {/* Крок 2: Сторінка підтвердження деталей замовлення та ініціації оплати (після створення замовлення в БД) */}
-          {/* Використовуємо :orderId замість :id для ясності */}
           <Route
             path="/checkout/payment/:orderId"
             element={<OrderCheckoutPage />}
           />
-          {/* Крок 3а: Сторінка успішної оплати (Повернення зі Stripe після успіху) */}
-          {/* Змінено шлях з pay/ok на більш логічний */}
 
           <Route path="/orders/success" element={<PaymentSuccessPage />} />
-          {/* Крок 3б: Сторінка скасування оплати (Повернення зі Stripe після скасування) */}
-          {/* Потрібно створити компонент PaymentCancelPage */}
           <Route path="/orders/failed" element={<PaymentFailedPage />} />
           <Route path="/orders/cancel" element={<PaymentCanceledPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          {/* Крок 3в: Сторінка "Дякуємо за замовлення" (Для методів оплати типу "При отриманні") */}
           {/* Потрібно створити компонент OrderThankYouPage */}
           {/* <Route
             path="/orders/thankyou/:orderId"
@@ -122,9 +117,8 @@ export const App: React.FC = () => {
           <Route path="tags" element={<AdminTags />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="discounts" element={<AdminDiscounts />} />
-          <Route path="image" element={<ImageUploadForm />} />
-          <Route path="newProduct" element={<OldAdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="review" element={<AdminComments />} />
         </Route>
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />

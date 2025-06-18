@@ -2,6 +2,7 @@
 import { NavLink } from "react-router";
 import { Product } from "../types/product.type";
 import React from "react";
+import { StarRating } from "../UI/StarRating";
 
 type ProductItemProps = {
   className?: string;
@@ -26,7 +27,7 @@ export const ProductItem: React.FC<ProductItemProps> = ({
       ? product.product_photos[0].photo_url
       : "https://via.placeholder.com/300x300?text=Фото+відсутнє";
 
-  const hasDiscount = product.discounted_price !== undefined;
+  const hasDiscount = !!product?.product_discounts;
 
   // Розрахунок відсотка знижки з перевіркою на undefined
   const discountPercentage = hasDiscount
@@ -40,12 +41,11 @@ export const ProductItem: React.FC<ProductItemProps> = ({
       className={`group flex flex-col w-full bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 ${className || ""}`}
       to={`/products/${product.id}`}
     >
-      {/* Image Container - Responsive Aspect Ratio */}
-      <div className="relative w-full aspect-square">
+      <div className="relative w-full aspect-[3/4]">
         <img
           src={productImage}
           alt={product.name}
-          className="absolute inset-0 w-full h-full object-cover bg-gray-100"
+          className="absolute inset-0 w-full h-full object-cover object-top bg-gray-100 "
           loading="lazy"
         />
 
@@ -54,21 +54,20 @@ export const ProductItem: React.FC<ProductItemProps> = ({
             -{discountPercentage}%
           </div>
         )}
+        <div className="absolute top-1 left-1  text-white px-2 py-1 rounded text-xs sm:text-sm font-bold">
+          <StarRating rating={product.rating} />
+        </div>
       </div>
 
-      {/* Content */}
       <div className="p-3 sm:p-4 flex flex-col gap-2 flex-grow">
-        {/* Brand */}
         <span className="text-xs sm:text-sm text-gray-600 font-medium line-clamp-1">
-          {product.product_brands[0]?.brands?.name || "Без бренду"}
+          {product.product_brands.name || "Без бренду"}
         </span>
 
-        {/* Product Name */}
         <h3 className="text-sm sm:text-base font-semibold line-clamp-2 flex-grow">
           {product.name}
         </h3>
 
-        {/* Price and Sales */}
         <div className="flex justify-between items-end mt-auto">
           <div className="flex flex-col">
             {hasDiscount ? (

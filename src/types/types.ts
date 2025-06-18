@@ -100,8 +100,8 @@ export interface ClientCartItem {
 export interface CartItemsListProps {
   items: ClientCartItem[]; // Пропс 'items' є масивом елементів кошика
   // Тут можуть бути інші пропси, наприклад, функції для видалення, оновлення кількості:
-  // onRemoveItem?: (cartItemId: number) => void;
-  // onUpdateQuantity?: (cartItemId: number, newQuantity: number) => void;
+  // onRemoveItem?: (cartcartId: number) => void;
+  // onUpdateQuantity?: (cartcartId: number, newQuantity: number) => void;
 }
 
 // Або якщо компонент рендерить ОДИН елемент кошика:

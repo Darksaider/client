@@ -1,5 +1,5 @@
-import { Timer } from "./timer";
-import { Slider } from "./Slider";
+import { Timer } from "./Mimtimer";
+import { Slider } from "./MainSlider";
 
 export const SliderSection: React.FC = () => {
   return (

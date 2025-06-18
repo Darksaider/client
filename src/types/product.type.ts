@@ -69,39 +69,40 @@ export interface Product {
   discounted_price?: string; // String, оскільки має формат "xxx.xx"
   created_at: string; // ISO 8601 date string
   updated_at: string; // ISO 8601 date string
-  product_photos: ProductPhoto[];
-  product_brands: {
-    id: number;
-    product_id: number;
-    brand_id: number;
-    brands: Brand;
-  }[];
-  product_categories: {
+  product_photos?: ProductPhoto[];
+  product_brands: Brand;
+  product_categories?: {
     id: number;
     product_id: number;
     category_id: number;
     categories: Category;
   }[];
-  product_colors: {
+  product_colors?: {
     id: number;
     product_id: number;
     color_id: number;
     colors: Color;
   }[];
-  product_sizes: {
+  product_sizes?: {
     id: number;
     product_id: number;
     size_id: number;
     sizes: Size;
   }[];
-  product_tags: { id: number; product_id: number; tag_id: number; tags: Tag }[];
-  product_discounts: {
+  product_tags?: {
+    id: number;
+    product_id: number;
+    tag_id: number;
+    tags: Tag;
+  }[];
+  product_discounts?: {
     id: number;
     product_id: number;
     discount_id: number;
     discounts: Discount;
   }[];
   discount_percentage?: string;
+  rating: number; // Optional, as not all products may have a rating
 }
 
 export interface ApiResponse {
@@ -109,11 +110,22 @@ export interface ApiResponse {
   message: string;
   data: {
     products: Product[];
-    productsCourt: number;
+    totalCount: number;
   };
+}
+export interface ProductsType {
+  products: Product[];
+  totalCount: number;
 }
 export interface ProductItem {
   success: boolean;
   message: string;
   data: Product;
+}
+export interface Favorite {
+  id: number;
+  user_id: number;
+  product_id: number;
+  added_at?: Date;
+  products: Product;
 }

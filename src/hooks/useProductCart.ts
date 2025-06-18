@@ -53,6 +53,7 @@ export const useProductCart = (
 
           if (cartItemToDelete) {
             await apiClient.delete(`/cart/${cartItemToDelete.cartId}`);
+            toast.success("Товар видалено з кошика");
           }
         } else {
           await apiClient.post("/cart", {
@@ -60,6 +61,7 @@ export const useProductCart = (
             color_id: selectedColor,
             size_id: selectedSize,
           });
+          toast.success("Товар додано до кошика");
         }
         refetchCarts();
       } else {
@@ -71,6 +73,7 @@ export const useProductCart = (
           };
           removeFromLocalCart(dataToRemove);
           // ПОТІМ оновлюємо стан (це важливо!)
+          toast.success("Товар видалено з кошика");
           setIsInCart(false);
         } else {
           // СПОЧАТКУ додаємо в localStorage
@@ -82,13 +85,14 @@ export const useProductCart = (
             quantity: 1,
           });
           setIsInCart(true);
+          toast.success("Товар додано до кошика");
         }
-        toast.success("Операція успішна");
 
         refetchCarts();
       }
     } catch (error) {
       console.error("Error managing cart", error);
+      toast.success("Помилка при додаванні/видаленні з кошика");
     }
   };
   const removeCart = async (cartId: number | string) => {
@@ -100,7 +104,7 @@ export const useProductCart = (
       } else {
         removeFromLocalCart({ cartId: cartId });
       }
-      toast.success("Операція успішна");
+      toast.success("Товар успішно видалено з кошика");
       refetchCarts();
     } catch (error) {
       console.error("Error removing cart item", error);

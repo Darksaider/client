@@ -2,10 +2,13 @@
 import { useCallback, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useCrudOperations } from "../../hooks/useCrud";
-import { useComments } from "../../hooks/hooks.ts";
 import { useAuth } from "../../hooks/useLogin";
 import { CommentsList } from "./CommentsList";
 import { Comment } from "../../types/types.ts";
+import toast from "react-hot-toast";
+import { Loader } from "lucide-react";
+import { useComments } from "../../hooks/useComments.ts";
+import { StarRating } from "../../UI/StarRating.tsx";
 
 type FormData = {
   text: string;
@@ -37,9 +40,9 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
   const {
     register,
     handleSubmit,
-    setValue,
     watch,
     reset,
+    setValue,
     formState: { errors, isValid },
   } = useForm<FormData>(formOptions);
 
@@ -49,8 +52,6 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
     apiUrlBase,
     refetch: refetchComments,
   });
-
-  const currentRating = watch("rating");
 
   const onSubmit = useCallback(
     async (data: FormData) => {
@@ -68,41 +69,16 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
         await createItem(comment);
         reset();
         setSubmitted(true);
-        setTimeout(() => {
-          setSubmitted(false);
-        }, 3000);
       } catch (error) {
-        console.error("Помилка створення коментаря:", error);
-        alert("Не вдалося відправити коментар. Спробуйте ще раз пізніше.");
+        toast.error(
+          "Не вдалося відправити коментар. Спробуйте ще раз пізніше.",
+        );
+        setSubmitted(false);
       } finally {
         setIsSubmitting(false);
       }
     },
     [createItem, productId, reset],
-  );
-
-  const starsArray = useMemo(() => [1, 2, 3, 4, 5], []);
-
-  const renderStar = useCallback(
-    (index: number) => {
-      const filled = index <= (hoverRating || currentRating);
-      return (
-        <button
-          type="button"
-          key={index}
-          className={`focus:outline-none text-3xl sm:text-2xl transition-all duration-200 touch-manipulation ${
-            filled ? "text-yellow-400" : "text-gray-300"
-          } hover:text-yellow-400 hover:scale-110 active:scale-95 p-1`}
-          onMouseEnter={() => setHoverRating(index)}
-          onMouseLeave={() => setHoverRating(0)}
-          onClick={() => setValue("rating", index)}
-          aria-label={`Встановити рейтинг ${index}`}
-        >
-          ★
-        </button>
-      );
-    },
-    [hoverRating, currentRating, setValue],
   );
 
   // Відображення компонента залежно від стану автентифікації
@@ -140,13 +116,16 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
             </p>
           </div>
         </div>
-        <CommentsList />
+        <CommentsList productId={productId} />
       </div>
     );
   }
+  if (isCommentsLoading) {
+    return <Loader />;
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mx-auto my-4 max-w-4xl">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mx-auto my-4 ">
       <div className="mb-6">
         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Залишити відгук
@@ -179,12 +158,11 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
           noValidate
           className="space-y-6"
         >
-          {/* Рейтинг */}
           <div className="bg-gray-50 rounded-lg p-4">
             <label className="block text-gray-800 font-semibold mb-3 text-sm sm:text-base">
               Ваша оцінка <span className="text-red-500">*</span>
             </label>
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0">
+            {/* <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0">
               <div className="flex items-center justify-center sm:justify-start space-x-1">
                 {starsArray.map(renderStar)}
               </div>
@@ -193,13 +171,18 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
                   ? `${currentRating} з 5 зірок`
                   : "Оберіть рейтинг"}
               </span>
-            </div>
-            <input
+            </div> */}
+            {/* <input
               type="hidden"
               {...register("rating", {
                 required: "Рейтинг обов'язковий",
                 min: { value: 1, message: "Вкажіть рейтинг" },
               })}
+            /> */}
+            <input type="hidden" {...register("rating")} />
+            <StarRating
+              rating={watch("rating")}
+              setRating={(r) => setValue("rating", r)}
             />
             {errors.rating && (
               <p className="text-red-500 text-sm mt-2 text-center sm:text-left">
@@ -291,12 +274,9 @@ export const Comments = ({ productId }: { productId: number | undefined }) => {
           </div>
         </form>
       )}
-
       <div className="mt-8 pt-6 border-t border-gray-200">
-        <CommentsList />
+        <CommentsList productId={productId} />
       </div>
     </div>
   );
 };
-
-export default Comments;

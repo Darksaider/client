@@ -6,6 +6,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 import sliderArrow from "./assets/ArrowSlider.svg";
+import { StarRating } from "./UI/StarRating";
 
 interface Testimonial {
   id: number;
@@ -21,21 +22,6 @@ interface TestimonialSlideProps {
 }
 
 export const TestimonialSlide: React.FC<TestimonialSlideProps> = ({ item }) => {
-  const renderRating = (rating: number) => {
-    return (
-      <div className="flex">
-        {[...Array(5)].map((_, i) => (
-          <span
-            key={i}
-            className={`text-2xl ${i < rating ? "text-orange-400" : "text-gray-300"}`}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="p-9 mb-4 bg-white flex text-black items-center justify-center rounded-lg shadow-lg gap-15 h-full">
       <img
@@ -46,7 +32,7 @@ export const TestimonialSlide: React.FC<TestimonialSlideProps> = ({ item }) => {
       />
       <div className="flex flex-col items-start w-1/2">
         <p className="text-lg text-center">{item.text}</p>
-        {item.rating && <div className="mt-2">{renderRating(item.rating)}</div>}
+        {item.rating && <StarRating rating={item.rating} />}
         <h3 className="font-bold mt-2">{item.name}</h3>
         <p className="text-sm">{item.role}</p>
       </div>

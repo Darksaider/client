@@ -10,7 +10,7 @@ interface AuthUserData {
 }
 
 // Тип для стану, який повертає хук
-interface AuthState extends AuthUserData {
+export interface AuthState extends AuthUserData {
   isLoggedIn: boolean;
   isLoading: boolean; // Показує, чи йде початкова перевірка/завантаження
   login: (userData: AuthUserData) => void; // Функція для запису даних після логіну
@@ -79,6 +79,10 @@ export function useAuth(): AuthState {
           LOCAL_STORAGE_KEYS.userEmail,
           serverUserData.email,
         );
+        localStorage.setItem(
+          LOCAL_STORAGE_KEYS.userId,
+          serverUserData.id.toString(),
+        );
       } catch (error) {
         // Якщо сервер повернув помилку (напр., 401 Unauthorized - токен невалідний)
         console.error("Session verification failed:", error);
@@ -86,9 +90,11 @@ export function useAuth(): AuthState {
         setIsLoggedIn(false);
         setUserRole(null);
         setUserEmail(null);
+        setUserId(null);
         localStorage.removeItem(LOCAL_STORAGE_KEYS.isLoggedIn);
         localStorage.removeItem(LOCAL_STORAGE_KEYS.userRole);
         localStorage.removeItem(LOCAL_STORAGE_KEYS.userEmail);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.userId);
       } finally {
         setIsLoading(false); // Завершуємо завантаження/перевірку
       }
@@ -111,11 +117,13 @@ export function useAuth(): AuthState {
         localStorage.setItem(LOCAL_STORAGE_KEYS.userRole, userData.role);
       if (userData.email)
         localStorage.setItem(LOCAL_STORAGE_KEYS.userEmail, userData.email);
+      if (userData.id)
+        localStorage.setItem(LOCAL_STORAGE_KEYS.userId, userData.id);
 
       setIsLoggedIn(true);
       setUserRole(userData.role);
       setUserEmail(userData.email);
-      setUserEmail(userData.id);
+      setUserId(userData.id); // Виправлено: було setUserEmail(userData.id)
     } catch (error) {
       console.error("Failed to save auth state to localStorage:", error);
       // Тут можна обробити помилку, якщо localStorage недоступний
@@ -142,6 +150,7 @@ export function useAuth(): AuthState {
       setIsLoggedIn(false);
       setUserRole(null);
       setUserEmail(null);
+      setUserId(null);
     } catch (error) {
       console.error("Logout failed:", error);
       // Можна показати помилку користувачу

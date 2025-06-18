@@ -1,3 +1,5 @@
+import { DollarSign, EarthLock, Headset, PackageCheck } from "lucide-react";
+import colection from "../../assets/pexels-thirdman-8483487.jpg";
 export const AboutPage = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -12,7 +14,11 @@ export const AboutPage = () => {
       {/* Концепція магазину */}
       <div className="flex flex-col md:flex-row gap-12 mb-16 items-center">
         <div className="w-full md:w-1/2 bg-gray-100 h-96 flex items-center justify-center">
-          <p className="text-gray-500 text-lg">[Зображення: Колекція одягу]</p>
+          <img
+            src={colection}
+            alt="Колекція одягу"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="w-full md:w-1/2">
           <h2 className="text-3xl font-bold mb-4">Наша концепція</h2>
@@ -41,6 +47,7 @@ export const AboutPage = () => {
             <h3 className="text-xl font-bold mb-2">Якість</h3>
             <p className="text-gray-700">
               Ми пропонуємо тільки якісний одяг від перевірених виробників.
+              Кожен товар проходить контроль якості перед тим, як потрапити до
               Кожен товар проходить контроль якості перед тим, як потрапити до
               вас.
             </p>
@@ -78,7 +85,7 @@ export const AboutPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-gray-50 p-6 rounded-lg text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
-              <p className="text-gray-500">[Іконка]</p>
+              <PackageCheck size={60} />
             </div>
             <h3 className="text-lg font-bold mb-2">Швидка доставка</h3>
             <p className="text-gray-700">
@@ -87,7 +94,7 @@ export const AboutPage = () => {
           </div>
           <div className="bg-gray-50 p-6 rounded-lg text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
-              <p className="text-gray-500">[Іконка]</p>
+              <EarthLock size={60} />
             </div>
             <h3 className="text-lg font-bold mb-2">Гарантія якості</h3>
             <p className="text-gray-700">
@@ -96,7 +103,7 @@ export const AboutPage = () => {
           </div>
           <div className="bg-gray-50 p-6 rounded-lg text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
-              <p className="text-gray-500">[Іконка]</p>
+              <DollarSign size={60} />
             </div>
             <h3 className="text-lg font-bold mb-2">Зручна оплата</h3>
             <p className="text-gray-700">
@@ -105,7 +112,7 @@ export const AboutPage = () => {
           </div>
           <div className="bg-gray-50 p-6 rounded-lg text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
-              <p className="text-gray-500">[Іконка]</p>
+              <Headset size={60} />
             </div>
             <h3 className="text-lg font-bold mb-2">Підтримка</h3>
             <p className="text-gray-700">
@@ -152,7 +159,6 @@ export const AboutPage = () => {
         </div>
       </div>
 
-      {/* Контакти CTA */}
       <div className="bg-gray-100 p-12 text-center rounded-lg">
         <h2 className="text-3xl font-bold mb-4">Зв'яжіться з нами</h2>
         <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto">

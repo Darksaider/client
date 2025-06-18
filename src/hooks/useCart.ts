@@ -1,14 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import {
-  ClientCartItem,
-  IFilterResponse,
-  // Order,
-  // OrderResponse,
-} from "../types/types";
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { useEffect, useRef, useCallback } from "react";
+import { ClientCartItem, IFilterResponse } from "../types/types";
 import apiClient from "./apiClient";
-import { useAuth } from "./useLogin";
 import { LocalCartItem, useLocalCart } from "./useLocalCart";
+import { useAuthContext } from "./useLoginContext";
 
 const getDataCarts = async (
   isLoggedIn: boolean,
@@ -17,7 +17,7 @@ const getDataCarts = async (
   const fetchProductsForLocalCart = async (localCartItems: LocalCartItem[]) => {
     try {
       if (localCartItems.length === 0) {
-        return []; // Повертаємо пустий масив замість undefined
+        return [];
       }
 
       const response = await apiClient.get(`/cart/get`, {
@@ -47,7 +47,7 @@ const getDataCarts = async (
       }
     } catch (error) {
       console.error("Помилка при отриманні даних про товари:", error);
-      return []; // Повертаємо пустий масив у випадку помилки
+      return [];
     }
   };
 
@@ -59,32 +59,31 @@ const getDataCarts = async (
     const localCart = getLocalCart();
 
     if (!localCart || localCart.length === 0) {
-      return []; // Одразу повертаємо пустий масив
+      return [];
     }
 
     return fetchProductsForLocalCart(localCart);
   }
 };
 
-// Очищення всього кошика
 const removeAllCartItems = async () => {
   const response = await apiClient.delete("/cart/clear");
   return response.data;
 };
 
-// Видалення окремого товару з кошика
-const removeCartItem = async (itemId: number) => {
-  const response = await apiClient.delete(`/cart/${itemId}`);
+const removeCartItem = async (cartId: number) => {
+  const response = await apiClient.delete(`/cart/${cartId}`);
   return response.data;
 };
 
 export function useCarts(isEnabled: boolean) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuthContext();
   const { getLocalCart } = useLocalCart();
   const { data, isError, isLoading, isSuccess, refetch, error } = useQuery({
     queryKey: ["cart", isLoggedIn],
     queryFn: () => getDataCarts(isLoggedIn, getLocalCart),
     select: (data) => data,
+    staleTime: 1000 * 60 * 2,
     enabled: isEnabled && isLoggedIn !== undefined,
   });
 
@@ -95,7 +94,6 @@ export function useCarts(isEnabled: boolean) {
   return { data, isError, isLoading, isSuccess, refetch, error };
 }
 
-// Хук для видалення окремого товару з кошика
 export function useRemoveCartItem() {
   const queryClient = useQueryClient();
 
@@ -107,7 +105,6 @@ export function useRemoveCartItem() {
   });
 }
 
-// Хук для очищення всього кошика
 export function useRemoveAllCartItems() {
   const queryClient = useQueryClient();
 
@@ -119,65 +116,124 @@ export function useRemoveAllCartItems() {
   });
 }
 
-// Типи для параметрів мутації
 interface UpdateCartItemParams {
-  itemId: number;
+  cartId: number;
   quantity: number;
 }
 
-// Тип для відповіді API
 interface CartUpdateResponse {
   success: boolean;
 }
 
-// Контекст для rollback при помилці
 interface MutationContext {
   previousCart?: ClientCartItem[];
 }
 
-// Функція для API виклику (тільки для авторизованих користувачів)
+// Зберігаємо останній валідний запит для кожного cartId
+const pendingUpdates = new Map<
+  number,
+  {
+    quantity: number;
+    timestamp: number;
+  }
+>();
+
 const updateCartItemQuantityOnServer = async ({
-  itemId,
+  cartId,
   quantity,
 }: UpdateCartItemParams): Promise<CartUpdateResponse> => {
-  const response = await apiClient.put(`/cart/${itemId}`, { quantity });
-  return response.data;
+  // Зберігаємо інформацію про цей запит
+  pendingUpdates.set(cartId, {
+    quantity,
+    timestamp: Date.now(),
+  });
+
+  try {
+    const response = await apiClient.put(`/cart/${cartId}`, { quantity });
+
+    // Видаляємо з pending після успішного виконання
+    pendingUpdates.delete(cartId);
+
+    return response.data;
+  } catch (error) {
+    // Якщо це не AbortError, видаляємо з pending
+    if (error.name !== "AbortError") {
+      pendingUpdates.delete(cartId);
+    }
+    throw error;
+  }
 };
 
-// Хук для оновлення кількості товару в кошику
 export function useUpdateCartItemQuantity() {
   const queryClient = useQueryClient();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuthContext();
   const { updateQuantityInLocalCart } = useLocalCart();
-  return useMutation({
-    mutationFn: async ({
-      itemId,
-      quantity,
-    }: UpdateCartItemParams): Promise<CartUpdateResponse> => {
-      if (isLoggedIn) {
-        // Для авторизованих користувачів - серверний запит
-        return updateCartItemQuantityOnServer({ itemId, quantity });
-      } else {
-        // Для неавторизованих - оновлення localStorage
-        updateQuantityInLocalCart(itemId.toString(), quantity);
-        return Promise.resolve({ success: true });
+
+  // Debounce таймери для кожного cartId
+  const debounceTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
+
+  const queryKey = ["cart", isLoggedIn];
+
+  const debouncedUpdate = useCallback(
+    (cartId: number, quantity: number) => {
+      // Очищуємо попередній таймер для цього cartId
+      const existingTimer = debounceTimers.current.get(cartId);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
       }
+
+      // Створюємо новий таймер
+      const timer = setTimeout(async () => {
+        try {
+          if (isLoggedIn) {
+            await updateCartItemQuantityOnServer({ cartId, quantity });
+          } else {
+            updateQuantityInLocalCart(cartId.toString(), quantity);
+          }
+
+          // Оновлюємо кеш після успішного запиту
+          queryClient.invalidateQueries({ queryKey });
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            console.error("Помилка оновлення кількості:", error);
+            // Відновлюємо дані з кешу при помилці
+            queryClient.invalidateQueries({ queryKey });
+          }
+        } finally {
+          debounceTimers.current.delete(cartId);
+        }
+      }, 500); // 500ms debounce
+
+      debounceTimers.current.set(cartId, timer);
+    },
+    [isLoggedIn, updateQuantityInLocalCart, queryClient, queryKey],
+  );
+
+  return useMutation({
+    mutationFn: async ({ cartId, quantity }: UpdateCartItemParams) => {
+      // Запускаємо debounced оновлення
+      debouncedUpdate(cartId, quantity);
+
+      // Повертаємо успішну відповідь для негайного оновлення UI
+      return Promise.resolve({ success: true });
     },
 
     onMutate: async ({
-      itemId,
+      cartId,
       quantity,
     }: UpdateCartItemParams): Promise<MutationContext> => {
-      // Скасовуємо всі поточні запити до кошика для обох типів користувачів
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousCart = queryClient.getQueryData<ClientCartItem[]>(["cart"]);
+      const previousCart = queryClient.getQueryData<ClientCartItem[]>(queryKey);
 
-      // Оптимістично оновлюємо кеш для всіх користувачів
-      queryClient.setQueryData<ClientCartItem[]>(["cart"], (old) =>
+      queryClient.setQueryData<ClientCartItem[]>(queryKey, (old) =>
         old
           ? old.map((item) =>
-              item.cartId === itemId ? { ...item, quantity } : item,
+              String(item.cartId) === String(cartId)
+                ? { ...item, quantity }
+                : item,
             )
           : [],
       );
@@ -190,17 +246,13 @@ export function useUpdateCartItemQuantity() {
       variables: UpdateCartItemParams,
       context: MutationContext | undefined,
     ) => {
-      // Rollback тільки для авторизованих користувачів при серверних помилках
-      if (context?.previousCart && isLoggedIn) {
-        queryClient.setQueryData(["cart"], context.previousCart);
+      // Відновлюємо попередній стан тільки якщо це не AbortError
+      if (err.name !== "AbortError" && context?.previousCart) {
+        queryClient.setQueryData(queryKey, context.previousCart);
       }
-      // Для неавторизованих користувачів localStorage вже оновлений, тому rollback не потрібен
+      console.error("Помилка оновлення кількості:", err);
     },
 
-    onSettled: () => {
-      if (isLoggedIn) {
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-      }
-    },
+    // Прибираємо onSettled, щоб не викликати зайві invalidateQueries
   });
 }

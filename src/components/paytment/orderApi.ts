@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ProductI } from "../../types/product.type";
+import { Color, Size } from "../../pages/admin/admin.type";
 
 // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 const API_URL = "http://localhost:3000";
@@ -10,6 +11,8 @@ export interface CartItem {
   name: string;
   description?: string;
   price: number;
+  size: Size;
+  color: Color;
   quantity: number;
   products: ProductI;
 }

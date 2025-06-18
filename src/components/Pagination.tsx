@@ -1,11 +1,6 @@
 import React, { useMemo } from "react";
-// Використовуй правильний імпорт для useSearchParams залежно від версії react-router
 import { useSearchParams, URLSearchParamsInit } from "react-router";
-
-const ITEMS_PER_PAGE: number = 12;
-const SIBLING_COUNT: number = 1;
-const ELLIPSIS: string = "...";
-// -----------------------------
+import { ITEMS_PER_PAGE, SIBLING_COUNT, ELLIPSIS } from "../store/constants";
 
 const range = (start: number, end: number): number[] => {
   if (start > end) return [];
@@ -22,7 +17,6 @@ export const PaginationButtons: React.FC<PaginationButtonsProps> = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ВИКОРИСТОВУЙ ПРАВИЛЬНУ НАЗВУ ПОЛЯ!
   const totalItems: number = productNumber;
 
   const currentPage: number = parseInt(searchParams.get("page") || "1", 10);
@@ -78,9 +72,9 @@ export const PaginationButtons: React.FC<PaginationButtonsProps> = ({
     }
 
     return range(1, totalPages);
-  }, [totalPages, currentPage]); // SIBLING_COUNT є константою
+  }, [totalPages, currentPage]);
 
-  // Функція для зміни сторінки - ТИП ПАРАМЕТРА ВИПРАВЛЕНО
+  // Функція для зміни сторінки
   const handlePageChange = (newPage: string | number): void => {
     // Не реагуємо на клік по еліпсису або якщо тип не число
     if (typeof newPage !== "number") return;
@@ -133,7 +127,7 @@ export const PaginationButtons: React.FC<PaginationButtonsProps> = ({
                             px-3 py-1 min-w-[36px] text-sm rounded border border-gray-300 transition-colors duration-150 ease-in-out
                             ${
                               isActive
-                                ? "bg-blue-500 text-white border-blue-500 z-10 cursor-default"
+                                ? "bg-amber-500 text-white border-blue-500 z-10 cursor-default"
                                 : "bg-white text-blue-600 hover:bg-gray-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
                             }
                             ${isLoading ? "opacity-50 cursor-not-allowed" : ""}

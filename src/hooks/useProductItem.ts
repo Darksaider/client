@@ -19,7 +19,7 @@ export const useProductItem = (id: number) => {
   return useQuery({
     queryKey: ["productItem", id],
     queryFn: () => fetchProduct(id),
-    staleTime: 0,
+    staleTime: 1000 * 60 * 2,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: 1,

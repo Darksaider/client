@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { useCallback } from "react";
+import toast from "react-hot-toast";
 
 // Загальний тип для помилок API (можна розширити за потреби)
 interface ApiError {
@@ -53,7 +54,9 @@ export function useCrudOperations<TCreateData, TUpdateData>({
     } else if (error.message) {
       errorMessage = error.message;
     }
-    alert(errorMessage); // Стандартне повідомлення
+    toast.error(errorMessage, {
+      duration: 5000,
+    }); // Тривалість повідомлення
   };
 
   const createItem = useCallback(
@@ -76,7 +79,7 @@ export function useCrudOperations<TCreateData, TUpdateData>({
           objectName = (data as any).name;
         }
 
-        alert(`${resourceName} "${objectName}" успішно створено!`);
+        toast.success(`${resourceName} "${objectName}" успішно створено!`);
         refetch();
         if (onSuccess) onSuccess("create", response.data);
         return response.data;
@@ -112,7 +115,7 @@ export function useCrudOperations<TCreateData, TUpdateData>({
           objectName = (data as any).name;
         }
 
-        alert(`${resourceName} "${objectName}" успішно оновлено!`);
+        toast.success(`${resourceName} "${objectName}" успішно оновлено!`);
         refetch();
         if (onSuccess) onSuccess("update", response.data);
         return response.data;
@@ -139,7 +142,7 @@ export function useCrudOperations<TCreateData, TUpdateData>({
         await axios.delete(`${apiUrlBase}${apiEndpoint}/${id}`, {
           withCredentials: true,
         });
-        alert(`${resourceName} з ID ${id} успішно видалено!`);
+        toast.success(`${resourceName} з ID ${id} успішно видалено!`);
         refetch();
         if (onSuccess) onSuccess("delete");
       } catch (error) {

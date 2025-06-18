@@ -1,6 +1,6 @@
 // components/Cart.tsx
 import { useState, useMemo, useCallback } from "react";
-import { Modal } from "./Modal";
+import { Modal } from "./WindowModal";
 import Portal from "./Portal";
 import { useCarts } from "../hooks/useCart";
 import cartImg from "../assets/cart.svg";

@@ -4,13 +4,14 @@ import Input from "../../UI/Input";
 import googleIcon from "../../assets/google.svg";
 import { NavLink, useNavigate } from "react-router";
 import { IFormSingInInput, ServerResponse } from "../../types/types";
-import { useAuth } from "../../hooks/useLogin";
 import { Button } from "../../UI/AnchorButton";
 import apiClient from "../../hooks/apiClient";
+import { useAuthContext } from "../../hooks/useLoginContext";
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthContext();
+
   const [isLoading, setIsLoading] = useState(false);
   const [serverResponse, setServerResponse] = useState<ServerResponse | null>(
     null,

@@ -1,9 +1,10 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import Input from "../../UI/Input";
 import { useUser } from "../../hooks/useUsers";
-import { formatDateForInput } from "../../hooks/fn";
+import { formatDateForInput } from "../../components/formatData";
 import { useEffect, useState } from "react";
 import apiClient from "../../hooks/apiClient";
+import { SkeletonLoadingProfile } from "../../components/skeleton/UserProfileSkeleton";
 
 // Типи для форми зміни паролю
 interface ResetPasswordForm {
@@ -173,11 +174,7 @@ export const UserProfile = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-lg text-black">Завантаження...</div>
-      </div>
-    );
+    return <SkeletonLoadingProfile />;
   }
 
   return (
@@ -307,10 +304,8 @@ export const UserProfile = () => {
         </form>
       </div>
 
-      {/* Форма зміни паролю */}
       <UserResetPassword />
 
-      {/* Інформація про акаунт */}
       <div className="mt-8 p-4 border border-black rounded-lg bg-white">
         <p className="text-sm text-black">
           Обліковий запис створений: {formatDateForInput(data?.created_at)}

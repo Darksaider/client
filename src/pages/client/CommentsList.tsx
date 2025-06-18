@@ -1,4 +1,4 @@
-import { useComments } from "../../hooks/hooks";
+import { useComments } from "../../hooks/useComments";
 
 export const StarIcon = ({ filled }: { filled: boolean }) => (
   <svg
@@ -15,19 +15,21 @@ export const StarIcon = ({ filled }: { filled: boolean }) => (
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
 );
-
-export const CommentsList = () => {
-  const { data, isLoading, isError, error } = useComments();
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-0.5">
-        {[...Array(5)].map((_, index) => (
-          <StarIcon key={index} filled={index < rating} />
-        ))}
-      </div>
-    );
-  };
+export const renderStars = (rating: number) => {
+  return (
+    <div className="flex gap-0.5">
+      {[...Array(5)].map((_, index) => (
+        <StarIcon key={index} filled={index < rating} />
+      ))}
+    </div>
+  );
+};
+export const CommentsList = ({
+  productId,
+}: {
+  productId: number | undefined;
+}) => {
+  const { data, isLoading, isError, error } = useComments(productId);
 
   // Функція для форматування дати
   const formatDate = (dateString: string) => {

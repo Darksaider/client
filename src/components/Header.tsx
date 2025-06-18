@@ -2,13 +2,14 @@ import { NavLink } from "react-router";
 import { useState, useEffect } from "react";
 import { FascoH1 } from "../UI/FascoH1";
 import { RegularText } from "../UI/RegularText";
-import { useAuth } from "../hooks/useLogin";
 import { Cart } from "./Cart";
+import { useAuthContext } from "../hooks/useLoginContext";
 
 export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const styleNav = "hover:text-gray-600 transition-colors duration-200";
-  const { isLoggedIn, email, logout, role, isLoading } = useAuth();
+
+  const { isLoggedIn, role, logout, isLoading } = useAuthContext();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -26,11 +27,10 @@ export const Header: React.FC = () => {
       document.body.style.overflow = "unset";
     }
 
-    // Cleanup function для відновлення скролу при демонтажі компонента
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isLoading]);
 
   return (
     <header className="bg-white h-[8vh] flex justify-between items-center px-4 md:px-8 shadow-sm sticky top-0 z-50">

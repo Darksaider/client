@@ -1,5 +1,5 @@
 import React from "react";
-
+import { NavLink } from "react-router";
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
@@ -108,11 +108,20 @@ export const Footer: React.FC = () => {
                 aria-label="Instagram"
               >
                 <svg
-                  className="w-5 h-5 text-pink-600"
-                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  color="red"
                 >
-                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987 6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-2.458 0-4.467-2.01-4.467-4.468 0-2.458 2.009-4.467 4.467-4.467s4.468 2.009 4.468 4.467c0 2.458-2.01 4.468-4.468 4.468zm7.519 0c-2.458 0-4.467-2.01-4.467-4.468 0-2.458 2.009-4.467 4.467-4.467s4.467 2.009 4.467 4.467c0 2.458-2.009 4.468-4.467 4.468z" />
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
                 <span className="text-sm font-medium text-gray-700 group-hover:text-pink-600">
                   Instagram
@@ -143,17 +152,25 @@ export const Footer: React.FC = () => {
         <div className="mt-8 pt-6 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <div className="flex flex-wrap items-center gap-4 text-xs lg:text-sm text-gray-500">
-              <a href="#" className="hover:text-gray-700 transition-colors">
+              <NavLink
+                className="hover:text-gray-700 transition-colors"
+                to={"/privacy"}
+              >
                 Політика конфіденційності
-              </a>
+              </NavLink>
               <span className="hidden sm:inline">•</span>
               <a href="#" className="hover:text-gray-700 transition-colors">
                 Умови використання
               </a>
+
               <span className="hidden sm:inline">•</span>
-              <a href="#" className="hover:text-gray-700 transition-colors">
+
+              <NavLink
+                className="hover:text-gray-700 transition-colors"
+                to={"/faq"}
+              >
                 Допомога
-              </a>
+              </NavLink>
             </div>
             <div className="flex items-center space-x-2 text-xs text-gray-500">
               <span>Зроблено з</span>

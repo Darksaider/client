@@ -1,3 +1,5 @@
+import { Favorite } from "../../types/product.type";
+
 // brands
 export interface Brand {
   id: number;
@@ -44,13 +46,6 @@ export interface Discount {
 }
 
 // favorites
-export interface Favorite {
-  id: number;
-  user_id: number;
-  product_id: number;
-  added_at?: Date;
-  product?: Product;
-}
 
 // product_brands
 export interface ProductBrand {
@@ -319,4 +314,15 @@ interface ProductTagNew {
     id: number;
     name: string;
   };
+}
+
+export interface Review {
+  id: number;
+  user_id: number;
+  product_id: number;
+  text: string;
+  rating: number;
+  created_at: string;
+  updated_at: string;
+  user: Pick<User, "id" | "email" | "first_name" | "avatar_url">;
 }
